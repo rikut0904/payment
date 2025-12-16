@@ -12,6 +12,7 @@ var settingRouter = require('./routes/setting');
 var loginRouter = require('./routes/login');
 var signinRouter = require('./routes/signin');
 var { getUserProfile } = require('./lib/firestoreUsers');
+var SESSION_MAX_AGE_MS = 60 * 1000;
 var app = express();
 
 app.locals.firebaseConfig = {
@@ -30,8 +31,19 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccountJson)
 });
 
+// Force re-login when the session has exceeded our short-lived window.
 const requireAuth = (req, res, next) => {
-  if (!req.session?.user) return res.redirect('/');
+  const user = req.session?.user;
+  if (!user) return res.redirect('/');
+  const loginAt = user.loginAt;
+  // Destroy stale session and show timeout notice.
+  if (!loginAt || Date.now() - loginAt > SESSION_MAX_AGE_MS) {
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.redirect('/login?timeout=1');
+    });
+    return;
+  }
   next();
 };
 
@@ -51,6 +63,7 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      maxAge: SESSION_MAX_AGE_MS,
     },
   })
 );
@@ -72,6 +85,7 @@ app.post('/session', async (req, res) => {
       uid: decoded.uid,
       email: decoded.email,
       name: profile?.name || decoded.name || '',
+      loginAt: Date.now(),
     };
     res.sendStatus(204);
   } catch (err) {

@@ -26,6 +26,9 @@
                     <button type="submit">メールアドレスでログイン</button>
                 </form>
                 <p>アカウントを作成していない方は<a href="/signin">こちら</a>から作成してください。</p>
+                <% if (infoMessage) { %>
+                <p class="info" style="color: green;"><%= infoMessage %></p>
+                <% } %>
                 <p id="loginError" class="error" style="color: red;">
                     <%= errorMessage || '' %>
                 </p>

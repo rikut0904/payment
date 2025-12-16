@@ -4,15 +4,17 @@ var admin = require('firebase-admin');
 var { getUserProfile } = require('../lib/firestoreUsers');
 
 function renderLogin(req, res, options = {}) {
-  res.render(
-    'login',
-    {
-      ...options,
-      title: 'ログイン',
-      projectName: 'Payment',
-      firebaseConfig: req.app.locals.firebaseConfig,
-    }
-  );
+  const baseOptions = {
+    title: 'ログイン',
+    projectName: 'Payment',
+    firebaseConfig: req.app.locals.firebaseConfig,
+    errorMessage: '',
+    infoMessage: '',
+  };
+  if (req.query.timeout) {
+    baseOptions.infoMessage = '一定時間操作がなかったため自動的にログアウトしました。';
+  }
+  res.render('login', Object.assign(baseOptions, options));
 }
 
 router.get('/', function (req, res) {
@@ -62,6 +64,7 @@ router.post('/', async function (req, res) {
       uid: decoded.uid,
       email: decoded.email,
       name: profile?.name || decoded.name || '',
+      loginAt: Date.now(),
     };
     res.redirect('/dashboard');
   } catch (error) {
