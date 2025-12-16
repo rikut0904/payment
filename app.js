@@ -4,7 +4,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var session = require('express-session');
+var crypto = require('crypto');
 
 var indexRouter = require('./routes/index');
 var dashboardRouter = require('./routes/dashboard');
@@ -15,6 +15,8 @@ var cardRouter = require('./routes/card');
 var likeRouter = require('./routes/like');
 var { getUserProfile } = require('./lib/firestoreUsers');
 var SESSION_MAX_AGE_MS = 60 * 1000;
+var SESSION_COOKIE_NAME = 'payment_session';
+var SESSION_SECRET = process.env.SESSION_SECRET || 'change_this_secret';
 var app = express();
 
 app.locals.firebaseConfig = {
@@ -49,10 +51,8 @@ const requireAuth = (req, res, next) => {
   const loginAt = user.loginAt;
   // Destroy stale session and show timeout notice.
   if (!loginAt || Date.now() - loginAt > SESSION_MAX_AGE_MS) {
-    req.session.destroy(() => {
-      res.clearCookie('connect.sid');
-      res.redirect('/login?timeout=1');
-    });
+    req.clearSession();
+    res.redirect('/login?timeout=1');
     return;
   }
   next();
@@ -66,18 +66,57 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: SESSION_MAX_AGE_MS,
-    },
-  })
-);
+
+function encodeSession(data) {
+  const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
+  const signature = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('base64url');
+  return `${payload}.${signature}`;
+}
+
+function decodeSession(token) {
+  if (!token) return null;
+  const [payload, signature] = token.split('.');
+  if (!payload || !signature) return null;
+  const expectedSignature = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('base64url');
+  const signatureBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  if (signatureBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, signatureBuffer)) {
+    return null;
+  }
+  try {
+    return JSON.parse(Buffer.from(payload, 'base64url').toString());
+  } catch (err) {
+    return null;
+  }
+}
+
+function setSession(res, data) {
+  const token = encodeSession(data);
+  res.cookie(SESSION_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: SESSION_MAX_AGE_MS,
+  });
+}
+
+function clearSession(res) {
+  res.clearCookie(SESSION_COOKIE_NAME);
+}
+
+app.use((req, res, next) => {
+  const sessionData = decodeSession(req.cookies?.[SESSION_COOKIE_NAME]);
+  req.session = sessionData;
+  req.saveSession = (data) => {
+    setSession(res, data);
+    req.session = data;
+  };
+  req.clearSession = () => {
+    clearSession(res);
+    req.session = null;
+  };
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/session', async (req, res) => {
@@ -92,12 +131,14 @@ app.post('/session', async (req, res) => {
     } catch (profileErr) {
       console.error('ユーザープロフィールの取得に失敗しました:', profileErr);
     }
-    req.session.user = {
-      uid: decoded.uid,
-      email: decoded.email,
-      name: profile?.name || decoded.name || '',
-      loginAt: Date.now(),
-    };
+    req.saveSession({
+      user: {
+        uid: decoded.uid,
+        email: decoded.email,
+        name: profile?.name || decoded.name || '',
+        loginAt: Date.now(),
+      },
+    });
     res.sendStatus(204);
   } catch (err) {
     res.status(401).json({ error: 'invalid token' });
@@ -105,10 +146,8 @@ app.post('/session', async (req, res) => {
 });
 
 function handleLogout(req, res) {
-  req.session.destroy(() => {
-    res.clearCookie('connect.sid');
-    res.sendStatus(204);
-  });
+  req.clearSession();
+  res.sendStatus(204);
 }
 
 app.post('/logout', handleLogout);

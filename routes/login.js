@@ -60,19 +60,15 @@ router.post('/', async function (req, res) {
       console.error('ユーザープロフィールの取得に失敗しました:', profileErr);
     }
 
-    req.session.regenerate((err) => {
-      if (err) {
-        console.error('セッションの再生成に失敗しました:', err);
-        return renderLogin(req, res, { errorMessage: 'セッションの初期化に失敗しました。しばらくして再度お試しください。' });
-      }
-      req.session.user = {
+    req.saveSession({
+      user: {
         uid: decoded.uid,
         email: decoded.email,
         name: profile?.name || decoded.name || '',
         loginAt: Date.now(),
-      };
-      res.redirect('/dashboard');
+      },
     });
+    res.redirect('/dashboard');
   } catch (error) {
     renderLogin(req, res, { errorMessage: 'ログイン処理でエラーが発生しました。' });
   }
