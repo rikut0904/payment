@@ -11,6 +11,8 @@ var dashboardRouter = require('./routes/dashboard');
 var settingRouter = require('./routes/setting');
 var loginRouter = require('./routes/login');
 var signinRouter = require('./routes/signin');
+var cardRouter = require('./routes/card');
+var likeRouter = require('./routes/like');
 var { getUserProfile } = require('./lib/firestoreUsers');
 var SESSION_MAX_AGE_MS = 60 * 1000;
 var app = express();
@@ -104,6 +106,8 @@ app.post('/logout', handleLogout);
 
 app.use('/', indexRouter);
 app.use('/dashboard', requireAuth, dashboardRouter);
+app.use('/card', requireAuth, cardRouter);
+app.use('/like', requireAuth, likeRouter);
 app.use('/setting', requireAuth, settingRouter);
 app.use('/login', loginRouter);
 app.use('/signin', signinRouter);
