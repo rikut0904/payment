@@ -3,7 +3,11 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('setting/index', { title: '設定' });
+  res.render('setting/index', {
+    title: '設定',
+    projectName: 'Payment',
+    firebaseConfig: req.app.locals.firebaseConfig
+  });
 });
 
 module.exports = router;

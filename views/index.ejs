@@ -11,30 +11,22 @@
 <body>
   <header>
     <h1>
-      <%= title %>
+      <%= projectName %>
     </h1>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/dashboard">Dashboard</a></li>
-        <li><a href="/setting">Setting</a></li>
-      </ul>
-    </nav>
   </header>
   <main>
     <section>
       <card>
         <h2>アカウント認証</h2>
-        <button href="/login">ログイン</button>
-        <button href="/signup">アカウント作成</button>
+        <p><a href="/login" class="btn">ログイン</a> | <a href="/signin" class="btn">アカウント作成</a></p>
       </card>
     </section>
   </main>
   <footer>
-    <p>&copy; 2025 <%= title %>. All rights reserved.</p>
+    <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
   </footer>
-  <script id="firebase-config" type="application/json"><%= JSON.stringify(app.locals.firebaseConfig) %></script>
-  <script src="/javascripts/firebase-auth.js"></script>
+  <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
+  <script type="module" src="/javascripts/firebase-auth.js" defer></script>
 </body>
 
 </html>
