@@ -8,8 +8,12 @@
   "dependencies": {
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^17.2.3",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
+    "express-session": "^1.18.0",
+    "firebase": "^12.6.0",
+    "firebase-admin": "^13.6.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1"
   }

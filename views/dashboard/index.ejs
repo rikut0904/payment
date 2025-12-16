@@ -8,7 +8,7 @@
   <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
-<body>
+<body data-skip-auth-redirect="true">
   <header>
     <h1>
       <%= title %>
@@ -20,21 +20,14 @@
         <li><a href="/setting">Setting</a></li>
       </ul>
     </nav>
+    <% if (userName) { %>
+      <p>
+        <%= userName %> さん
+      </p>
+      <% } %>
+        <button id="logoutBtn" type="button">ログアウト</button>
   </header>
   <main>
-    <section>
-      <card>
-        <h2>ログインはこちらから</h2>
-        <form action="/login" method="post">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required>
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required>
-          <button type="submit">Login</button>
-        </form>
-        <p>アカウント作成がまだの方は<a href="/signup">こちらから</a></p>
-      </card>
-    </section>
     <section>
       <card>
         <h2>ダッシュボード</h2>
@@ -43,8 +36,10 @@
     </section>
   </main>
   <footer>
-    <p>&copy; 2025 <%= title %>. All rights reserved.</p>
+    <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
   </footer>
+  <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
+  <script type="module" src="/javascripts/firebase-auth.js" defer></script>
 </body>
 
 </html>
