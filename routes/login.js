@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var admin = require('firebase-admin');
+var { getUserProfile } = require('../lib/firestoreUsers');
 
 function renderLogin(req, res, options = {}) {
   res.render(
@@ -52,7 +53,19 @@ router.post('/', async function (req, res) {
 
     const data = await response.json();
     const decoded = await admin.auth().verifyIdToken(data.idToken);
-    req.session.user = { uid: decoded.uid, email: decoded.email };
+
+    let profile = null;
+    try {
+      profile = await getUserProfile(decoded.uid);
+    } catch (profileErr) {
+      console.error('ユーザープロフィールの取得に失敗しました:', profileErr);
+    }
+
+    req.session.user = {
+      uid: decoded.uid,
+      email: decoded.email,
+      name: profile?.name || decoded.name || '',
+    };
     res.redirect('/dashboard');
   } catch (error) {
     renderLogin(req, res, { errorMessage: 'ログイン処理でエラーが発生しました。' });

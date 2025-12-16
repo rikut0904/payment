@@ -20,7 +20,12 @@
         <li><a href="/setting">Setting</a></li>
       </ul>
     </nav>
-    <button id="logoutBtn" type="button">ログアウト</button>
+    <% if (userName) { %>
+      <p>
+        <%= userName %> さん
+      </p>
+      <% } %>
+        <button id="logoutBtn" type="button">ログアウト</button>
   </header>
   <main>
     <section>

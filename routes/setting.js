@@ -2,11 +2,13 @@ var express = require('express');
 var router = express.Router();
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
+  const userName = req.session.user?.name || 'No-Name';
   res.render('setting/index', {
     title: '設定',
     projectName: 'Payment',
-    firebaseConfig: req.app.locals.firebaseConfig
+    userName: userName,
+    firebaseConfig: req.app.locals.firebaseConfig,
   });
 });
 

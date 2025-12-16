@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var admin = require('firebase-admin');
+var { createUserProfile } = require('../lib/firestoreUsers');
 
 function renderSignin(req, res, options = {}) {
   res.render(
@@ -24,14 +25,32 @@ router.get('/', function (req, res) {
 
 router.post('/', async function (req, res) {
   const { name, email, password } = req.body || {};
-  if (!name || !email || !password) {
-    return renderSignin(req, res, { errorMessage: 'メールアドレスとパスワードを入力してください。' });
+  const trimmedName = (name || '').trim();
+  const trimmedEmail = (email || '').trim();
+  if (!trimmedName || !trimmedEmail || !password) {
+    return renderSignin(req, res, { errorMessage: 'ユーザー名・メールアドレス・パスワードをすべて入力してください。' });
   }
 
   try {
-    await admin.auth().createUser({ name, email, password });
+    const userRecord = await admin.auth().createUser({
+      displayName: trimmedName,
+      email: trimmedEmail,
+      password,
+    });
+
+    try {
+      await createUserProfile(userRecord.uid, {
+        name: trimmedName,
+        email: trimmedEmail,
+      });
+    } catch (profileError) {
+      await admin.auth().deleteUser(userRecord.uid);
+      throw profileError;
+    }
+
     return res.redirect('/login');
   } catch (error) {
+    console.error('アカウント作成に失敗しました:', error);
     let message = 'アカウント作成に失敗しました。';
     if (error.code === 'auth/email-already-exists') {
       message = 'このメールアドレスは既に登録されています。';

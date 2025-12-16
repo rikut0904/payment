@@ -11,6 +11,7 @@ var dashboardRouter = require('./routes/dashboard');
 var settingRouter = require('./routes/setting');
 var loginRouter = require('./routes/login');
 var signinRouter = require('./routes/signin');
+var { getUserProfile } = require('./lib/firestoreUsers');
 var app = express();
 
 app.locals.firebaseConfig = {
@@ -61,7 +62,17 @@ app.post('/session', async (req, res) => {
   }
   try {
     const decoded = await admin.auth().verifyIdToken(req.body.idToken);
-    req.session.user = { uid: decoded.uid, email: decoded.email };
+    let profile = null;
+    try {
+      profile = await getUserProfile(decoded.uid);
+    } catch (profileErr) {
+      console.error('ユーザープロフィールの取得に失敗しました:', profileErr);
+    }
+    req.session.user = {
+      uid: decoded.uid,
+      email: decoded.email,
+      name: profile?.name || decoded.name || '',
+    };
     res.sendStatus(204);
   } catch (err) {
     res.status(401).json({ error: 'invalid token' });
