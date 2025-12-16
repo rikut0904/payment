@@ -7,8 +7,37 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var dashboardRouter = require('./routes/dashboard');
 var settingRouter = require('./routes/setting');
+var loginRouter = require('./routes/login');
+var signinRouter = require('./routes/signin');
 var app = express();
 
+require('dotenv').config();
+app.locals.firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+};
+
+const admin = require('firebase-admin');
+admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FB_ADMIN_JSON)) });
+app.post('/session', async (req, res) => {
+  try {
+    const decoded = await admin.auth().verifyIdToken(req.body.idToken);
+    req.session.user = { uid: decoded.uid, email: decoded.email };
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(401).json({ error: 'invalid token' });
+  }
+});
+
+const requireAuth = (req, res, next) => {
+  if (!req.session?.user) return res.redirect('/');
+  next();
+};
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -20,16 +49,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/dashboard', dashboardRouter);
-app.use('/setting', settingRouter);
+app.use('/dashboard', requireAuth, dashboardRouter);
+app.use('/setting', requireAuth, settingRouter);
+app.use('/login', loginRouter);
+app.use('/signin', signinRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
