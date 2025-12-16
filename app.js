@@ -16,7 +16,7 @@ var likeRouter = require('./routes/like');
 var { getUserProfile } = require('./lib/firestoreUsers');
 var SESSION_MAX_AGE_MS = 60 * 1000;
 var SESSION_COOKIE_NAME = 'payment_session';
-var SESSION_SECRET = process.env.SESSION_SECRET || 'change_this_secret';
+var SESSION_SECRET = process.env.SESSION_SECRET;
 var app = express();
 
 app.locals.firebaseConfig = {
