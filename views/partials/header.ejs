@@ -1,0 +1,15 @@
+<header>
+  <h1><%= title %></h1>
+  <nav>
+    <ul>
+      <li><a href="/dashboard">ダッシュボード</a></li>
+      <li><a href="/card">支払情報管理</a></li>
+      <li><a href="/like">おすすめ</a></li>
+      <li><a href="/setting">設定</a></li>
+    </ul>
+  </nav>
+  <% if (userName) { %>
+    <p><%= userName %> さん</p>
+  <% } %>
+  <button id="logoutBtn" type="button">ログアウト</button>
+</header>

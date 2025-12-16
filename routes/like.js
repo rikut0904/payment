@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET dashboard page. */
-router.get('/', function(req, res, next) {
+/* GET like page. */
+router.get('/', function(req, res) {
   const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
-  res.render('dashboard/index', {
-    title: 'ダッシュボード',
+  res.render('like/index', {
+    title: 'おすすめ',
     projectName: 'Payment',
     userName: userName,
     firebaseConfig: req.app.locals.firebaseConfig,

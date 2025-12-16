@@ -9,28 +9,10 @@
 </head>
 
 <body data-skip-auth-redirect="true">
-  <header>
-    <h1>
-      <%= title %>
-    </h1>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/dashboard">Dashboard</a></li>
-        <li><a href="/setting">Setting</a></li>
-      </ul>
-    </nav>
-    <% if (userName) { %>
-      <p>
-        <%= userName %> さん
-      </p>
-      <% } %>
-        <button id="logoutBtn" type="button">ログアウト</button>
-  </header>
+  <%- include('../partials/header', { title, userName }) %>
   <main>
     <section>
       <card>
-        <h2>ダッシュボード</h2>
         <p>ダッシュボードはここに表示されます</p>
       </card>
     </section>
