@@ -87,7 +87,6 @@ function handleLogout(req, res) {
 }
 
 app.post('/logout', handleLogout);
-app.get('/logout', handleLogout);
 
 app.use('/', indexRouter);
 app.use('/dashboard', requireAuth, dashboardRouter);
