@@ -6,16 +6,14 @@ var { createUserProfile } = require('../lib/firestoreUsers');
 function renderSignin(req, res, options = {}) {
   res.render(
     'signin',
-    Object.assign(
-      {
-        title: 'アカウント作成',
-        projectName: 'Payment',
-        firebaseConfig: req.app.locals.firebaseConfig,
-        successMessage: options.successMessage || '',
-        errorMessage: options.errorMessage || '',
-      },
-      options
-    )
+    {
+      ...options,
+      title: 'アカウント作成',
+      projectName: 'Payment',
+      firebaseConfig: req.app.locals.firebaseConfig,
+      successMessage: options.successMessage || '',
+      errorMessage: options.errorMessage || '',
+    }
   );
 }
 

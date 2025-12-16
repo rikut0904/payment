@@ -6,15 +6,12 @@ var { getUserProfile } = require('../lib/firestoreUsers');
 function renderLogin(req, res, options = {}) {
   res.render(
     'login',
-    Object.assign(
-      {
-        title: 'ログイン',
-        projectName: 'Payment',
-        firebaseConfig: req.app.locals.firebaseConfig,
-        errorMessage: options.errorMessage || '',
-      },
-      options
-    )
+    {
+      ...options,
+      title: 'ログイン',
+      projectName: 'Payment',
+      firebaseConfig: req.app.locals.firebaseConfig,
+    }
   );
 }
 
