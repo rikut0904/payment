@@ -3,6 +3,19 @@ var router = express.Router();
 var admin = require('firebase-admin');
 var { createUserProfile } = require('../lib/firestoreUsers');
 
+function mapSignupErrorMessage(code) {
+  switch (code) {
+    case 'auth/email-already-exists':
+      return 'このメールアドレスは既に登録されています。';
+    case 'auth/invalid-password':
+      return 'パスワードは6文字以上で入力してください。';
+    case 'auth/invalid-email':
+      return 'メールアドレスの形式が正しくありません。';
+    default:
+      return 'アカウント作成に失敗しました。時間をおいて再度お試しください。';
+  }
+}
+
 function renderSignin(req, res, options = {}) {
   res.render(
     'signin',
@@ -49,13 +62,7 @@ router.post('/', async function (req, res) {
     return res.redirect('/login');
   } catch (error) {
     console.error('アカウント作成に失敗しました:', error);
-    let message = 'アカウント作成に失敗しました。';
-    if (error.code === 'auth/email-already-exists') {
-      message = 'このメールアドレスは既に登録されています。';
-    } else if (error.code === 'auth/invalid-password') {
-      message = 'パスワードは6文字以上で入力してください。';
-    }
-    return renderSignin(req, res, { errorMessage: message });
+    return renderSignin(req, res, { errorMessage: mapSignupErrorMessage(error.code) });
   }
 });
 

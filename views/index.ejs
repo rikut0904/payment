@@ -9,22 +9,31 @@
 </head>
 
 <body>
-  <header>
-    <h1>
-      <%= title %>
-    </h1>
-  </header>
-  <main>
-    <section>
-      <card>
+  <div class="layout">
+    <header>
+      <h1><%= title %></h1>
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/login">ログイン</a></li>
+          <li><a href="/signin">アカウント作成</a></li>
+        </ul>
+      </nav>
+    </header>
+    <div class="content">
+      <section class="card">
         <h2>アカウント認証</h2>
-        <p><a href="/login" class="btn">ログイン</a> | <a href="/signin" class="btn">アカウント作成</a></p>
-      </card>
-    </section>
-  </main>
-  <footer>
-    <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
-  </footer>
+        <p>Paymentはシンプルな決済管理アプリです。まずはアカウントを作成するかログインしてください。</p>
+        <div class="actions">
+          <a href="/login" class="btn">ログイン</a>
+          <a href="/signin" class="btn">アカウント作成</a>
+        </div>
+      </section>
+    </div>
+    <footer>
+      <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+    </footer>
+  </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
 </body>

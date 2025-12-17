@@ -9,17 +9,18 @@
 </head>
 
 <body data-skip-auth-redirect="true">
-  <%- include('../partials/header', { title, userName }) %>
-  <main>
-    <section>
-      <card>
+  <div class="layout">
+    <%- include('../partials/header', { title, userName }) %>
+    <div class="content">
+      <section class="card">
+        <h2>ダッシュボード</h2>
         <p>ダッシュボードはここに表示されます</p>
-      </card>
-    </section>
-  </main>
-  <footer>
-    <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
-  </footer>
+      </section>
+    </div>
+    <footer>
+      <p>&copy; 2025 <%= projectName %>. All rights reserved。</p>
+    </footer>
+  </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
 </body>

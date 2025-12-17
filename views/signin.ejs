@@ -9,15 +9,21 @@
 </head>
 
 <body>
-    <header>
-        <h1>
-            <%= title %>
-        </h1>
-    </header>
-    <main>
-        <p><a href="/">トップページへ戻る</a></p>
-        <section>
-            <card>
+    <div class="layout">
+        <header>
+            <h1>
+                <%= title %>
+            </h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/login">ログイン</a></li>
+                    <li><a href="/signin">アカウント作成</a></li>
+                </ul>
+            </nav>
+        </header>
+        <div class="content">
+            <section class="card">
                 <h2>アカウント作成</h2>
                 <form action="/signin" method="post">
                     <label for="name">ユーザー名</label>
@@ -28,16 +34,16 @@
                     <input type="password" id="password" name="password" required>
                     <button type="submit">アカウント作成</button>
                 </form>
-                <p>アカウントを作成している方は<a href="/login">こちら</a>からログインしてください。</p>
-                <p id="loginError" class="error" style="color: red;">
+                <p>すでに登録済みの方は <a href="/login">こちら</a> からログインしてください。</p>
+                <p id="signinError" class="error">
                     <%= errorMessage || '' %>
                 </p>
-            </card>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
-    </footer>
+            </section>
+        </div>
+        <footer>
+            <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+        </footer>
+    </div>
 </body>
 
 </html>
