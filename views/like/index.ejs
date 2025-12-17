@@ -23,9 +23,7 @@
                 <tr>
                   <th>ユーザー名</th>
                   <th>商品名</th>
-                  <th>商品概要</th>
                   <th>購入日</th>
-                  <th>購入先URL</th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -33,14 +31,8 @@
                 <% content.forEach(function(item) { %>
                   <tr>
                     <td><%= item.userName || '' %></td>
-                    <td><%= item.title || '' %></td>
-                    <td><%= item.content || '' %></td>
+                    <td><%= (item.title && item.title.length > 30) ? item.title.slice(0, 25) + '...' : (item.title || '') %></td>
                     <td><%= item.date || '' %></td>
-                    <td>
-                      <% if (item.url) { %>
-                        <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer"><%= item.url %></a>
-                      <% } %>
-                    </td>
                     <td class="actions-cell">
                       <details>
                         <summary><span class="material-icons">more_vert</span></summary>
