@@ -9,35 +9,44 @@
 </head>
 
 <body>
-    <header>
-        <h1>
-            <%= title %>
-        </h1>
-    </header>
-    <main>
-        <p><a href="/">トップページへ戻る</a></p>
-        <section>
-            <card>
-                <form id="emailLoginForm" action="/login" method="post">
-                    <label for="loginEmail">メールアドレス</label>
-                    <input type="email" id="loginEmail" name="email" required>
-                    <label for="loginPassword">パスワード</label>
-                    <input type="password" id="loginPassword" name="password" required>
-                    <button type="submit">メールアドレスでログイン</button>
-                </form>
-                <p>アカウントを作成していない方は<a href="/signin">こちら</a>から作成してください。</p>
+    <div class="layout">
+        <header>
+            <h1>
+                <%= title %>
+            </h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/login">ログイン</a></li>
+                    <li><a href="/signin">アカウント作成</a></li>
+                </ul>
+            </nav>
+        </header>
+        <div class="content">
+            <section class="card">
+                <h2>メールアドレスでログイン</h2>
                 <% if (infoMessage) { %>
-                <p class="info" style="color: green;"><%= infoMessage %></p>
-                <% } %>
-                <p id="loginError" class="error" style="color: red;">
-                    <%= errorMessage || '' %>
-                </p>
-            </card>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
-    </footer>
+                    <p class="info">
+                        <%= infoMessage %>
+                    </p>
+                    <% } %>
+                        <form id="emailLoginForm" action="/login" method="post">
+                            <label for="loginEmail">メールアドレス</label>
+                            <input type="email" id="loginEmail" name="email" required>
+                            <label for="loginPassword">パスワード</label>
+                            <input type="password" id="loginPassword" name="password" required>
+                            <button type="submit">ログイン</button>
+                        </form>
+                        <p>アカウントをお持ちでない場合は <a href="/signin">こちら</a> から作成できます。</p>
+                        <p id="loginError" class="error">
+                            <%= errorMessage || '' %>
+                        </p>
+            </section>
+        </div>
+        <footer>
+            <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+        </footer>
+    </div>
     <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
     <script type="module" src="/javascripts/firebase-auth.js" defer></script>
 </body>
