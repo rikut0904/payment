@@ -113,11 +113,18 @@ label {
   color: var(--text-sub);
 }
 
-input {
+input,
+textarea {
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--border);
   font-size: 16px;
+  font-family: inherit;
+}
+
+textarea {
+  min-height: 96px;
+  resize: vertical;
 }
 
 button[type='submit'] {
@@ -148,4 +155,80 @@ footer {
   border-top: 1px solid var(--border);
   text-align: center;
   color: var(--text-sub);
+}
+
+.actions-cell details {
+  position: relative;
+  display: inline-block;
+}
+
+.actions-cell summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.actions-cell summary::-webkit-details-marker {
+  display: none;
+}
+
+.actions-cell summary:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.actions-menu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 120px;
+  z-index: 5;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+}
+
+.actions-menu a,
+.actions-menu button {
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  color: var(--text-main);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.actions-menu a + a,
+.actions-menu button + a,
+.actions-menu a + button,
+.actions-menu button + button {
+  border-top: 1px solid var(--border);
+}
+
+.actions-menu a:hover,
+.actions-menu button:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+}
+.table th,
+.table td {
+  vertical-align: middle;
+  text-align: center;
 }

@@ -5,24 +5,89 @@
   <title>
     <%= title %>
   </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
 <body data-skip-auth-redirect="true">
   <div class="layout">
     <%- include('../partials/header', { title, userName }) %>
-    <div class="content">
-      <section class="card">
-        <h2>おすすめ</h2>
-        <p>おすすめはここに表示されます</p>
-      </section>
-    </div>
-    <footer>
-      <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
-    </footer>
+      <div class="content">
+        <section class="card">
+          <h2>おすすめ</h2>
+          <% if(content && content.length) { %>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ユーザー名</th>
+                  <th>商品名</th>
+                  <th>商品概要</th>
+                  <th>購入日</th>
+                  <th>購入先URL</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% content.forEach(function(item) { %>
+                  <tr>
+                    <td><%= item.userName || '' %></td>
+                    <td><%= item.title || '' %></td>
+                    <td><%= item.content || '' %></td>
+                    <td><%= item.date || '' %></td>
+                    <td>
+                      <% if (item.url) { %>
+                        <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer"><%= item.url %></a>
+                      <% } %>
+                    </td>
+                    <td class="actions-cell">
+                      <details>
+                        <summary><span class="material-icons">more_vert</span></summary>
+                        <div class="actions-menu">
+                          <a href="/like/update/<%= item.id %>">編集</a>
+                          <a href="#" class="delete-link" data-id="<%= item.id %>">削除</a>
+                        </div>
+                      </details>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="text-center">
+              <h2>おすすめがありません!!</h2>
+              <p>おすすめを追加してください!!</p>
+            </div>
+          <% } %>
+          <a href="/like/add" class="btn btn-primary">おすすめを追加</a>
+        </section>
+      </div>
+      <footer>
+        <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+      </footer>
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+  <script>
+    document.addEventListener('click', (event) => {
+      document.querySelectorAll('.actions-cell details[open]').forEach((details) => {
+        if (!details.contains(event.target)) {
+          details.removeAttribute('open');
+        }
+      });
+    });
+    document.querySelectorAll('.delete-link').forEach((link) => {
+      link.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const id = link.dataset.id;
+        if (!id) return;
+        if (!confirm('このおすすめを削除しますか？')) return;
+        await fetch(`/like/delete/${id}`, { method: 'POST', headers: { 'Accept': 'application/json' } });
+        location.reload();
+      });
+    });
+  </script>
 </body>
 
 </html>
