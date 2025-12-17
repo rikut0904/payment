@@ -14,9 +14,12 @@ var signinRouter = require('./routes/signin');
 var cardRouter = require('./routes/card');
 var likeRouter = require('./routes/like');
 var { getUserProfile } = require('./lib/firestoreUsers');
-var SESSION_MAX_AGE_MS = 60 * 1000;
 var SESSION_COOKIE_NAME = 'payment_session';
 var SESSION_SECRET = process.env.SESSION_SECRET;
+var SESSION_TIME_MS = parseInt(process.env.SESSION_TIME_MS || '', 10);
+if (!Number.isFinite(SESSION_TIME_MS) || SESSION_TIME_MS <= 0) {
+  SESSION_TIME_MS = 60 * 1000;
+}
 var app = express();
 
 app.locals.firebaseConfig = {
@@ -50,7 +53,7 @@ const requireAuth = (req, res, next) => {
   if (!user) return res.redirect('/');
   const loginAt = user.loginAt;
   // Destroy stale session and show timeout notice.
-  if (!loginAt || Date.now() - loginAt > SESSION_MAX_AGE_MS) {
+  if (!loginAt || Date.now() - loginAt > SESSION_TIME_MS) {
     req.clearSession();
     res.redirect('/login?timeout=1');
     return;
@@ -96,7 +99,7 @@ function setSession(res, data) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: SESSION_MAX_AGE_MS,
+    maxAge: SESSION_TIME_MS,
   });
 }
 
