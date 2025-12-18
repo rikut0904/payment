@@ -2,6 +2,24 @@ var express = require('express');
 var router = express.Router();
 var { listLikes, addLikeEntry, getLikeById, updateLikeEntry, deleteLikeEntry } = require('../lib/firestoreLikes');
 
+function wantsJsonResponse(req) {
+  const accepts = req.headers.accept || '';
+  return req.xhr || accepts.includes('application/json');
+}
+
+function isOwner(req, entry) {
+  const sessionUid = req.session?.user?.uid;
+  return Boolean(entry && entry.userId && sessionUid && entry.userId === sessionUid);
+}
+
+function respondForbidden(req, res, message) {
+  const msg = message || 'このおすすめを操作する権限がありません。';
+  if (wantsJsonResponse(req)) {
+    return res.status(403).json({ success: false, error: msg });
+  }
+  return res.status(403).send(msg);
+}
+
 /* GET like page. */
 router.get('/', async function (req, res) {
   const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
@@ -26,12 +44,17 @@ router.get('/add', function (req, res) {
 });
 
 router.post('/add', async function (req, res) {
+  const userId = req.session?.user?.uid;
   const userName = req.session?.user?.name || req.session?.user?.email;
+  if (!userId) {
+    return res.status(401).send('認証情報が不足しています。');
+  }
   const { date, title, contentText, url, image } = req.body || {};
   if (!date || !title) {
     return res.status(400).send('必須項目が未入力です。');
   }
   await addLikeEntry({
+    userId,
     userName,
     date,
     title,
@@ -44,8 +67,18 @@ router.post('/add', async function (req, res) {
 
 router.get('/update/:id', async function (req, res) {
   const entry = await getLikeById(req.params.id);
+  const wantsJson = wantsJsonResponse(req);
   if (!entry) {
+    if (wantsJson) {
+      return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
+    }
     return res.redirect('/like');
+  }
+  if (!isOwner(req, entry)) {
+    return respondForbidden(req, res, 'このおすすめを編集する権限がありません。');
+  }
+  if (wantsJson) {
+    return res.json({ success: true });
   }
   const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
   res.render('like/update', {
@@ -58,6 +91,13 @@ router.get('/update/:id', async function (req, res) {
 });
 
 router.post('/update/:id', async function (req, res) {
+  const entry = await getLikeById(req.params.id);
+  if (!entry) {
+    return res.status(404).send('おすすめが見つかりません。');
+  }
+  if (!isOwner(req, entry)) {
+    return respondForbidden(req, res, 'このおすすめを編集する権限がありません。');
+  }
   const { date, title, contentText, url, image } = req.body || {};
   if (!date || !title) {
     return res.status(400).send('必須項目が未入力です。');
@@ -73,9 +113,22 @@ router.post('/update/:id', async function (req, res) {
 });
 
 async function handleDelete(req, res) {
+  const entry = await getLikeById(req.params.id);
+  const wantsJson = wantsJsonResponse(req);
+  if (!entry) {
+    if (wantsJson) {
+      return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
+    }
+    return res.status(404).send('おすすめが見つかりません。');
+  }
+  if (!isOwner(req, entry)) {
+    if (wantsJson) {
+      return res.status(403).json({ success: false, error: 'このおすすめを削除する権限がありません。' });
+    }
+    return res.status(403).send('このおすすめを削除する権限がありません。');
+  }
   await deleteLikeEntry(req.params.id);
-  const accepts = req.headers.accept || '';
-  if (req.xhr || accepts.includes('application/json')) {
+  if (wantsJson) {
     return res.json({ success: true });
   }
   res.redirect('/like');

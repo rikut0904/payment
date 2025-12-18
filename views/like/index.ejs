@@ -45,7 +45,7 @@
                       <details>
                         <summary><span class="material-icons">more_vert</span></summary>
                         <div class="actions-menu">
-                          <a href="/like/update/<%= item.id %>">編集</a>
+                          <a href="/like/update/<%= item.id %>" class="edit-link">編集</a>
                           <a href="#" class="delete-link" data-id="<%= item.id %>">削除</a>
                         </div>
                       </details>
@@ -77,14 +77,57 @@
         }
       });
     });
+    document.querySelectorAll('.edit-link').forEach((link) => {
+      link.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const href = link.getAttribute('href');
+        if (!href) return;
+        try {
+          const response = await fetch(href, {
+            headers: { Accept: 'application/json' },
+          });
+          if (!response.ok) {
+            const body = await response.json().catch(() => null);
+            alert(body?.error || '編集画面を開けませんでした。');
+            return;
+          }
+          const result = await response.json().catch(() => null);
+          if (!result?.success) {
+            alert(result?.error || '編集画面を開けませんでした。');
+            return;
+          }
+          window.location.href = href;
+        } catch (err) {
+          alert('通信エラーが発生しました。時間をおいてから再度お試しください。');
+        }
+      });
+    });
     document.querySelectorAll('.delete-link').forEach((link) => {
       link.addEventListener('click', async (event) => {
         event.preventDefault();
         const id = link.dataset.id;
         if (!id) return;
         if (!confirm('このおすすめを削除しますか？')) return;
-        await fetch(`/like/delete/${id}`, { method: 'POST', headers: { 'Accept': 'application/json' } });
-        location.reload();
+        try {
+          const response = await fetch(`/like/delete/${id}`, {
+            method: 'POST',
+            headers: { Accept: 'application/json' },
+          });
+          if (!response.ok) {
+            const body = await response.json().catch(() => null);
+            const message = body?.error || '削除に失敗しました。';
+            alert(message);
+            return;
+          }
+          const result = await response.json().catch(() => null);
+          if (!result?.success) {
+            alert(result?.error || '削除に失敗しました。');
+            return;
+          }
+          location.reload();
+        } catch (err) {
+          alert('通信エラーが発生しました。時間をおいてから再度お試しください。');
+        }
       });
     });
   </script>
