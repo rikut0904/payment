@@ -53,14 +53,22 @@ router.post('/add', async function (req, res) {
   if (!date || !title) {
     return res.status(400).send('必須項目が未入力です。');
   }
+  const trimmedUrl = (url || '').trim();
+  if (trimmedUrl && !(trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://'))) {
+    return res.status(400).send('購入先URLはhttp://またはhttps://で始まる必要があります。');
+  }
+  const trimmedImage = (image || '').trim();
+  if (trimmedImage && !(trimmedImage.startsWith('http://') || trimmedImage.startsWith('https://'))) {
+    return res.status(400).send('商品画像URLはhttp://またはhttps://で始まる必要があります。');
+  }
   await addLikeEntry({
     userId,
     userName,
     date,
     title,
     content: (contentText || '').trim(),
-    url: (url || '').trim(),
-    image: (image || '').trim(),
+    url: trimmedUrl,
+    image: trimmedImage,
   });
   res.redirect('/like');
 });
@@ -102,12 +110,20 @@ router.post('/update/:id', async function (req, res) {
   if (!date || !title) {
     return res.status(400).send('必須項目が未入力です。');
   }
+  const trimmedUrl = (url || '').trim();
+  if (trimmedUrl && !(trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://'))) {
+    return res.status(400).send('購入先URLはhttp://またはhttps://で始まる必要があります。');
+  }
+  const trimmedImage = (image || '').trim();
+  if (trimmedImage && !(trimmedImage.startsWith('http://') || trimmedImage.startsWith('https://'))) {
+    return res.status(400).send('商品画像URLはhttp://またはhttps://で始まる必要があります。');
+  }
   await updateLikeEntry(req.params.id, {
     date,
     title,
     content: (contentText || '').trim(),
-    url: (url || '').trim(),
-    image: (image || '').trim(),
+    url: trimmedUrl,
+    image: trimmedImage,
   });
   res.redirect('/like');
 });
