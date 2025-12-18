@@ -41,7 +41,7 @@
             <div class="detail-column">
               <p><strong>商品画像:</strong></p>
               <% if (entry.image) { %>
-                <img src="<%= entry.image %>" alt="商品画像" class="img-detail">
+                <img src="/image-proxy?url=<%= encodeURIComponent(entry.image) %>" alt="商品画像" class="img-detail">
                 <% } else { %>
                   未入力
                   <% } %>
