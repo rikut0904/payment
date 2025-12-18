@@ -26,6 +26,30 @@ function respondForbidden(req, res, message) {
   return res.status(403).send(msg);
 }
 
+function extractLikeData(body) {
+  const { date, title, contentText, url, image } = body || {};
+  if (!date || !title) {
+    return { error: '必須項目が未入力です。' };
+  }
+  const trimmedUrl = (url || '').trim();
+  if (trimmedUrl && !(trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://'))) {
+    return { error: '購入先URLはhttp://またはhttps://で始まる必要があります。' };
+  }
+  const trimmedImage = (image || '').trim();
+  if (trimmedImage && !(trimmedImage.startsWith('http://') || trimmedImage.startsWith('https://'))) {
+    return { error: '商品画像URLはhttp://またはhttps://で始まる必要があります。' };
+  }
+  return {
+    data: {
+      date,
+      title,
+      content: (contentText || '').trim(),
+      url: trimmedUrl,
+      image: trimmedImage,
+    },
+  };
+}
+
 /* GET like page. */
 router.get(
   '/',
@@ -57,30 +81,18 @@ router.post(
   asyncHandler(async function (req, res) {
     const userId = req.session?.user?.uid;
     const userName = req.session?.user?.name || req.session?.user?.email;
-  if (!userId) {
-    return res.status(401).send('認証情報が不足しています。');
-  }
-  const { date, title, contentText, url, image } = req.body || {};
-  if (!date || !title) {
-    return res.status(400).send('必須項目が未入力です。');
-  }
-  const trimmedUrl = (url || '').trim();
-  if (trimmedUrl && !(trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://'))) {
-    return res.status(400).send('購入先URLはhttp://またはhttps://で始まる必要があります。');
-  }
-  const trimmedImage = (image || '').trim();
-  if (trimmedImage && !(trimmedImage.startsWith('http://') || trimmedImage.startsWith('https://'))) {
-    return res.status(400).send('商品画像URLはhttp://またはhttps://で始まる必要があります。');
-  }
-  await addLikeEntry({
-    userId,
-    userName,
-    date,
-    title,
-    content: (contentText || '').trim(),
-    url: trimmedUrl,
-    image: trimmedImage,
-  });
+    if (!userId) {
+      return res.status(401).send('認証情報が不足しています。');
+    }
+    const { data, error } = extractLikeData(req.body);
+    if (error) {
+      return res.status(400).send(error);
+    }
+    await addLikeEntry({
+      userId,
+      userName,
+      ...data,
+    });
     res.redirect('/like');
   })
 );
@@ -117,31 +129,17 @@ router.post(
   '/update/:id',
   asyncHandler(async function (req, res) {
     const entry = await getLikeById(req.params.id);
-  if (!entry) {
-    return res.status(404).send('おすすめが見つかりません。');
-  }
-  if (!isOwner(req, entry)) {
-    return respondForbidden(req, res, 'このおすすめを編集する権限がありません。');
-  }
-  const { date, title, contentText, url, image } = req.body || {};
-  if (!date || !title) {
-    return res.status(400).send('必須項目が未入力です。');
-  }
-  const trimmedUrl = (url || '').trim();
-  if (trimmedUrl && !(trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://'))) {
-    return res.status(400).send('購入先URLはhttp://またはhttps://で始まる必要があります。');
-  }
-  const trimmedImage = (image || '').trim();
-  if (trimmedImage && !(trimmedImage.startsWith('http://') || trimmedImage.startsWith('https://'))) {
-    return res.status(400).send('商品画像URLはhttp://またはhttps://で始まる必要があります。');
-  }
-  await updateLikeEntry(req.params.id, {
-    date,
-    title,
-    content: (contentText || '').trim(),
-    url: trimmedUrl,
-    image: trimmedImage,
-  });
+    if (!entry) {
+      return res.status(404).send('おすすめが見つかりません。');
+    }
+    if (!isOwner(req, entry)) {
+      return respondForbidden(req, res, 'このおすすめを編集する権限がありません。');
+    }
+    const { data, error } = extractLikeData(req.body);
+    if (error) {
+      return res.status(400).send(error);
+    }
+    await updateLikeEntry(req.params.id, data);
     res.redirect('/like');
   })
 );
