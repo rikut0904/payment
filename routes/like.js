@@ -82,7 +82,6 @@ async function handleDelete(req, res) {
 }
 
 router.post('/delete/:id', handleDelete);
-router.get('/delete/:id', handleDelete);
 
 router.get('/detail/:id', async function (req, res) {
   const entry = await getLikeById(req.params.id);
