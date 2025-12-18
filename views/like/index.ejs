@@ -13,7 +13,7 @@
 
 <body data-skip-auth-redirect="true">
   <div class="layout">
-    <%- include('../partials/header', { title, userName }) %>
+    <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
           <h2>おすすめ</h2>
@@ -35,7 +35,7 @@
                     </td>
                     <td>
                       <a href="/like/detail/<%= item.id %>">
-                        <%= (item.title && item.title.length> 30) ? item.title.slice(0, 25) + '...' : (item.title || '') %>
+                        <%= truncate(item.title, 30) %>
                       </a>
                     </td>
                     <td>
@@ -46,7 +46,7 @@
                         <summary><span class="material-icons">more_vert</span></summary>
                         <div class="actions-menu">
                           <a href="/like/update/<%= item.id %>" class="edit-link">編集</a>
-                          <a href="#" class="delete-link" data-id="<%= item.id %>">削除</a>
+                          <a href="/like/delete/<%= item.id %>" class="delete-link">削除</a>
                         </div>
                       </details>
                     </td>
@@ -75,34 +75,6 @@
       document.querySelectorAll('.actions-cell details[open]').forEach((details) => {
         if (!details.contains(event.target)) {
           details.removeAttribute('open');
-        }
-      });
-    });
-    document.querySelectorAll('.delete-link').forEach((link) => {
-      link.addEventListener('click', async (event) => {
-        event.preventDefault();
-        const id = link.dataset.id;
-        if (!id) return;
-        if (!confirm('このおすすめを削除しますか？')) return;
-        try {
-          const response = await fetch(`/like/delete/${id}`, {
-            method: 'POST',
-            headers: { Accept: 'application/json' },
-          });
-          if (!response.ok) {
-            const body = await response.json().catch(() => null);
-            const message = body?.error || '削除に失敗しました。';
-            alert(message);
-            return;
-          }
-          const result = await response.json().catch(() => null);
-          if (!result?.success) {
-            alert(result?.error || '削除に失敗しました。');
-            return;
-          }
-          location.reload();
-        } catch (err) {
-          alert('通信エラーが発生しました。時間をおいてから再度お試しください。');
         }
       });
     });

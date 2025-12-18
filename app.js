@@ -32,6 +32,12 @@ app.locals.firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID,
   measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
+app.locals.truncate = (text, length = 30, omission = '...') => {
+  if (!text) return '';
+  if (text.length <= length) return text;
+  const sliceLength = Math.max(0, length - omission.length);
+  return text.slice(0, sliceLength) + omission;
+};
 
 const admin = require('firebase-admin');
 const serviceAccount = {
@@ -119,6 +125,11 @@ app.use((req, res, next) => {
     clearSession(res);
     req.session = null;
   };
+  next();
+});
+
+app.use((req, res, next) => {
+  res.locals.userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));

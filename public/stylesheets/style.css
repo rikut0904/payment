@@ -192,6 +192,7 @@ footer {
   min-width: 120px;
   z-index: 5;
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
 }
 
 .actions-menu a,
@@ -213,6 +214,10 @@ footer {
 .actions-menu a+button,
 .actions-menu button+button {
   border-top: 1px solid var(--border);
+}
+
+.actions-menu form {
+  margin: 0;
 }
 
 .actions-menu a:hover,

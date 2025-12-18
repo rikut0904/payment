@@ -1,4 +1,5 @@
 var express = require('express');
+var createError = require('http-errors');
 var router = express.Router();
 var { listLikes, addLikeEntry, getLikeById, updateLikeEntry, deleteLikeEntry } = require('../lib/firestoreLikes');
 
@@ -23,7 +24,7 @@ function respondForbidden(req, res, message) {
   if (wantsJsonResponse(req)) {
     return res.status(403).json({ success: false, error: msg });
   }
-  return res.status(403).send(msg);
+  throw createError(403, msg);
 }
 
 function extractLikeData(body) {
@@ -54,24 +55,20 @@ function extractLikeData(body) {
 router.get(
   '/',
   asyncHandler(async function (req, res) {
-    const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
     const content = await listLikes();
     res.render('like/index', {
       title: 'おすすめ',
       projectName: 'Payment',
-    userName,
-    firebaseConfig: req.app.locals.firebaseConfig,
-    content,
-  });
+      firebaseConfig: req.app.locals.firebaseConfig,
+      content,
+    });
   })
 );
 
 router.get('/add', function (req, res) {
-  const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
   res.render('like/add', {
     title: 'おすすめを追加',
     projectName: 'Payment',
-    userName,
     firebaseConfig: req.app.locals.firebaseConfig,
   });
 });
@@ -80,7 +77,7 @@ router.post(
   '/add',
   asyncHandler(async function (req, res) {
     const userId = req.session?.user?.uid;
-    const userName = req.session?.user?.name || req.session?.user?.email;
+    const userName = res.locals.userName;
     if (!userId) {
       return res.status(401).send('認証情報が不足しています。');
     }
@@ -102,25 +99,23 @@ router.get(
   asyncHandler(async function (req, res) {
     const entry = await getLikeById(req.params.id);
     const wantsJson = wantsJsonResponse(req);
-  if (!entry) {
-    if (wantsJson) {
-      return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
+    if (!entry) {
+      if (wantsJson) {
+        return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
+      }
+      return res.redirect('/like');
     }
-    return res.redirect('/like');
-  }
-  if (!isOwner(req, entry)) {
-    return respondForbidden(req, res, 'このおすすめを編集する権限がありません。');
-  }
-  if (wantsJson) {
-    return res.json({ success: true });
-  }
-  const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
-  res.render('like/update', {
-    title: 'おすすめを編集',
-    projectName: 'Payment',
-    userName,
-    firebaseConfig: req.app.locals.firebaseConfig,
-    entry,
+    if (!isOwner(req, entry)) {
+      return respondForbidden(req, res, 'このおすすめを編集する権限がありません。');
+    }
+    if (wantsJson) {
+      return res.json({ success: true });
+    }
+    res.render('like/update', {
+      title: 'おすすめを編集',
+      projectName: 'Payment',
+      firebaseConfig: req.app.locals.firebaseConfig,
+      entry,
     });
   })
 );
@@ -144,8 +139,9 @@ router.post(
   })
 );
 
-async function handleDelete(req, res, next) {
-  try {
+router.post(
+  '/delete/:id',
+  asyncHandler(async function (req, res) {
     const entry = await getLikeById(req.params.id);
     const wantsJson = wantsJsonResponse(req);
     if (!entry) {
@@ -155,22 +151,15 @@ async function handleDelete(req, res, next) {
       return res.status(404).send('おすすめが見つかりません。');
     }
     if (!isOwner(req, entry)) {
-      if (wantsJson) {
-        return res.status(403).json({ success: false, error: 'このおすすめを削除する権限がありません。' });
-      }
-      return res.status(403).send('このおすすめを削除する権限がありません。');
+      return respondForbidden(req, res, 'このおすすめを削除する権限がありません。');
     }
     await deleteLikeEntry(req.params.id);
     if (wantsJson) {
       return res.json({ success: true });
     }
     res.redirect('/like');
-  } catch (err) {
-    next(err);
-  }
-}
-
-router.post('/delete/:id', handleDelete);
+  })
+);
 
 router.get(
   '/detail/:id',
@@ -179,11 +168,9 @@ router.get(
     if (!entry) {
       return res.redirect('/like');
     }
-    const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
     res.render('like/detail', {
       title: 'おすすめの詳細',
       projectName: 'Payment',
-      userName,
       firebaseConfig: req.app.locals.firebaseConfig,
       entry,
     });
