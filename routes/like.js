@@ -2,6 +2,12 @@ var express = require('express');
 var router = express.Router();
 var { listLikes, addLikeEntry, getLikeById, updateLikeEntry, deleteLikeEntry } = require('../lib/firestoreLikes');
 
+function asyncHandler(handler) {
+  return function (req, res, next) {
+    Promise.resolve(handler(req, res, next)).catch(next);
+  };
+}
+
 function wantsJsonResponse(req) {
   const accepts = req.headers.accept || '';
   return req.xhr || accepts.includes('application/json');
@@ -21,17 +27,20 @@ function respondForbidden(req, res, message) {
 }
 
 /* GET like page. */
-router.get('/', async function (req, res) {
-  const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
-  const content = await listLikes();
-  res.render('like/index', {
-    title: 'おすすめ',
-    projectName: 'Payment',
+router.get(
+  '/',
+  asyncHandler(async function (req, res) {
+    const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
+    const content = await listLikes();
+    res.render('like/index', {
+      title: 'おすすめ',
+      projectName: 'Payment',
     userName,
     firebaseConfig: req.app.locals.firebaseConfig,
     content,
   });
-});
+  })
+);
 
 router.get('/add', function (req, res) {
   const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
@@ -43,9 +52,11 @@ router.get('/add', function (req, res) {
   });
 });
 
-router.post('/add', async function (req, res) {
-  const userId = req.session?.user?.uid;
-  const userName = req.session?.user?.name || req.session?.user?.email;
+router.post(
+  '/add',
+  asyncHandler(async function (req, res) {
+    const userId = req.session?.user?.uid;
+    const userName = req.session?.user?.name || req.session?.user?.email;
   if (!userId) {
     return res.status(401).send('認証情報が不足しています。');
   }
@@ -70,12 +81,15 @@ router.post('/add', async function (req, res) {
     url: trimmedUrl,
     image: trimmedImage,
   });
-  res.redirect('/like');
-});
+    res.redirect('/like');
+  })
+);
 
-router.get('/update/:id', async function (req, res) {
-  const entry = await getLikeById(req.params.id);
-  const wantsJson = wantsJsonResponse(req);
+router.get(
+  '/update/:id',
+  asyncHandler(async function (req, res) {
+    const entry = await getLikeById(req.params.id);
+    const wantsJson = wantsJsonResponse(req);
   if (!entry) {
     if (wantsJson) {
       return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
@@ -95,11 +109,14 @@ router.get('/update/:id', async function (req, res) {
     userName,
     firebaseConfig: req.app.locals.firebaseConfig,
     entry,
-  });
-});
+    });
+  })
+);
 
-router.post('/update/:id', async function (req, res) {
-  const entry = await getLikeById(req.params.id);
+router.post(
+  '/update/:id',
+  asyncHandler(async function (req, res) {
+    const entry = await getLikeById(req.params.id);
   if (!entry) {
     return res.status(404).send('おすすめが見つかりません。');
   }
@@ -125,47 +142,55 @@ router.post('/update/:id', async function (req, res) {
     url: trimmedUrl,
     image: trimmedImage,
   });
-  res.redirect('/like');
-});
+    res.redirect('/like');
+  })
+);
 
-async function handleDelete(req, res) {
-  const entry = await getLikeById(req.params.id);
-  const wantsJson = wantsJsonResponse(req);
-  if (!entry) {
-    if (wantsJson) {
-      return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
+async function handleDelete(req, res, next) {
+  try {
+    const entry = await getLikeById(req.params.id);
+    const wantsJson = wantsJsonResponse(req);
+    if (!entry) {
+      if (wantsJson) {
+        return res.status(404).json({ success: false, error: 'おすすめが見つかりません。' });
+      }
+      return res.status(404).send('おすすめが見つかりません。');
     }
-    return res.status(404).send('おすすめが見つかりません。');
-  }
-  if (!isOwner(req, entry)) {
-    if (wantsJson) {
-      return res.status(403).json({ success: false, error: 'このおすすめを削除する権限がありません。' });
+    if (!isOwner(req, entry)) {
+      if (wantsJson) {
+        return res.status(403).json({ success: false, error: 'このおすすめを削除する権限がありません。' });
+      }
+      return res.status(403).send('このおすすめを削除する権限がありません。');
     }
-    return res.status(403).send('このおすすめを削除する権限がありません。');
+    await deleteLikeEntry(req.params.id);
+    if (wantsJson) {
+      return res.json({ success: true });
+    }
+    res.redirect('/like');
+  } catch (err) {
+    next(err);
   }
-  await deleteLikeEntry(req.params.id);
-  if (wantsJson) {
-    return res.json({ success: true });
-  }
-  res.redirect('/like');
 }
 
 router.post('/delete/:id', handleDelete);
 
-router.get('/detail/:id', async function (req, res) {
-  const entry = await getLikeById(req.params.id);
-  if (!entry) {
-    return res.redirect('/like');
-  }
-  const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
-  res.render('like/detail', {
-    title: 'おすすめの詳細',
-    projectName: 'Payment',
-    userName,
-    firebaseConfig: req.app.locals.firebaseConfig,
-    entry,
-  });
-});
+router.get(
+  '/detail/:id',
+  asyncHandler(async function (req, res) {
+    const entry = await getLikeById(req.params.id);
+    if (!entry) {
+      return res.redirect('/like');
+    }
+    const userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
+    res.render('like/detail', {
+      title: 'おすすめの詳細',
+      projectName: 'Payment',
+      userName,
+      firebaseConfig: req.app.locals.firebaseConfig,
+      entry,
+    });
+  })
+);
 
 router.get('/:id', function (req, res) {
   res.redirect(`/like/detail/${req.params.id}`);
