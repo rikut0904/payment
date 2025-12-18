@@ -69,36 +69,12 @@
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+  <script src="/javascripts/like-actions.js" defer></script>
   <script>
     document.addEventListener('click', (event) => {
       document.querySelectorAll('.actions-cell details[open]').forEach((details) => {
         if (!details.contains(event.target)) {
           details.removeAttribute('open');
-        }
-      });
-    });
-    document.querySelectorAll('.edit-link').forEach((link) => {
-      link.addEventListener('click', async (event) => {
-        event.preventDefault();
-        const href = link.getAttribute('href');
-        if (!href) return;
-        try {
-          const response = await fetch(href, {
-            headers: { Accept: 'application/json' },
-          });
-          if (!response.ok) {
-            const body = await response.json().catch(() => null);
-            alert(body?.error || '編集画面を開けませんでした。');
-            return;
-          }
-          const result = await response.json().catch(() => null);
-          if (!result?.success) {
-            alert(result?.error || '編集画面を開けませんでした。');
-            return;
-          }
-          window.location.href = href;
-        } catch (err) {
-          alert('通信エラーが発生しました。時間をおいてから再度お試しください。');
         }
       });
     });
