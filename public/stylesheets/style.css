@@ -208,10 +208,10 @@ footer {
   cursor: pointer;
 }
 
-.actions-menu a + a,
-.actions-menu button + a,
-.actions-menu a + button,
-.actions-menu button + button {
+.actions-menu a+a,
+.actions-menu button+a,
+.actions-menu a+button,
+.actions-menu button+button {
   border-top: 1px solid var(--border);
 }
 
@@ -227,11 +227,38 @@ footer {
   font-size: 24px;
   line-height: 1;
 }
+
 .table th,
 .table td {
   vertical-align: middle;
   text-align: left;
 }
+
 .text-start {
   text-align: left;
+}
+
+.img-detail {
+  max-height: 250px;
+  width: auto;
+}
+
+.col-6 {
+  padding: 0 16px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -16px;
+}
+
+.detail-grid {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.detail-grid .detail-column {
+  flex: 1;
 }

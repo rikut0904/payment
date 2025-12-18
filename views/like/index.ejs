@@ -23,16 +23,24 @@
                 <tr>
                   <th>ユーザー名</th>
                   <th>商品名</th>
-                  <th>購入日</th>
+                  <th>私の購入日</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 <% content.forEach(function(item) { %>
                   <tr>
-                    <td><%= item.userName || '' %></td>
-                    <td><%= (item.title && item.title.length > 30) ? item.title.slice(0, 25) + '...' : (item.title || '') %></td>
-                    <td><%= item.date || '' %></td>
+                    <td>
+                      <%= item.userName || '' %>
+                    </td>
+                    <td>
+                      <a href="/like/detail/<%= item.id %>">
+                        <%= (item.title && item.title.length> 30) ? item.title.slice(0, 25) + '...' : (item.title || '') %>
+                      </a>
+                    </td>
+                    <td>
+                      <%= item.date || '' %>
+                    </td>
                     <td class="actions-cell">
                       <details>
                         <summary><span class="material-icons">more_vert</span></summary>
@@ -43,16 +51,16 @@
                       </details>
                     </td>
                   </tr>
-                <% }) %>
+                  <% }) %>
               </tbody>
             </table>
-          <% } else { %>
-            <div class="text-center">
-              <h2>おすすめがありません!!</h2>
-              <p>おすすめを追加してください!!</p>
-            </div>
-          <% } %>
-          <a href="/like/add" class="btn btn-primary">おすすめを追加</a>
+            <% } else { %>
+              <div class="text-center">
+                <h2>おすすめがありません!!</h2>
+                <p>おすすめを追加してください!!</p>
+              </div>
+              <% } %>
+                <a href="/like/add" class="btn btn-primary">おすすめを追加</a>
         </section>
       </div>
       <footer>
