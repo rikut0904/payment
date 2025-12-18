@@ -114,7 +114,8 @@ label {
 }
 
 input,
-textarea {
+textarea,
+select {
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -223,6 +224,27 @@ footer {
 .actions-menu a:hover,
 .actions-menu button:hover {
   background: rgba(37, 99, 235, 0.08);
+}
+
+.filter-bar {
+  margin: 12px 0 24px;
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.filter-form label {
+  margin: 0;
+}
+
+.filter-form select {
+  min-width: 220px;
 }
 
 .material-icons {
