@@ -19,7 +19,7 @@
           <h2>
             <%= title %>
           </h2>
-          <details class="filter-accordion" <%= (filters && (filters.userName || filters.title || filters.category)) ? 'open' : '' %>>
+          <details class="filter-accordion" <%= showFilterOpen ? 'open' : '' %>>
             <summary>ソート・フィルタ条件</summary>
             <div class="filter-bar">
               <form class="filter-form" method="get" action="/like">

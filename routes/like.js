@@ -89,54 +89,6 @@ function normalizeSortOrder(order) {
   return SORT_ORDER_OPTIONS.some((opt) => opt.value === order) ? order : DEFAULT_SORT_ORDER;
 }
 
-function getTimestampValue(value) {
-  if (!value) return 0;
-  if (typeof value.toMillis === 'function') {
-    return value.toMillis();
-  }
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'object' && typeof value._seconds === 'number') {
-    const nanos = typeof value._nanoseconds === 'number' ? value._nanoseconds : 0;
-    return value._seconds * 1000 + Math.round(nanos / 1e6);
-  }
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function getDateValue(value) {
-  if (!value) return 0;
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function getSortValue(entry, field) {
-  switch (field) {
-    case 'userName':
-      return (entry.userName || '').toLowerCase();
-    case 'title':
-      return (entry.title || '').toLowerCase();
-    case 'date':
-      return getDateValue(entry.date);
-    case 'createdAt':
-    default:
-      return getTimestampValue(entry.createdAt);
-  }
-}
-
-function compareEntries(a, b, field, order) {
-  const valueA = getSortValue(a, field);
-  const valueB = getSortValue(b, field);
-  let comparison = 0;
-  if (typeof valueA === 'string' && typeof valueB === 'string') {
-    comparison = valueA.localeCompare(valueB);
-  } else {
-    comparison = valueA - valueB;
-  }
-  return order === 'desc' ? comparison * -1 : comparison;
-}
-
 /* GET like page. */
 router.get(
   '/',
@@ -149,19 +101,21 @@ router.get(
     };
     const sortField = normalizeSortField(req.query.sort);
     const sortOrder = normalizeSortOrder(req.query.order);
-    const content = await listLikes({ category: filters.category || undefined });
+    const content = await listLikes({
+      category: filters.category || undefined,
+      userName: filters.userName || undefined,
+      sortField,
+      sortOrder,
+    });
     let filteredContent = content;
-    if (filters.userName) {
-      const userNameLower = filters.userName.toLowerCase();
-      filteredContent = filteredContent.filter((item) =>
-        (item.userName || '').toLowerCase().includes(userNameLower)
-      );
-    }
     if (filters.title) {
       const titleLower = filters.title.toLowerCase();
       filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
     }
-    filteredContent.sort((a, b) => compareEntries(a, b, sortField, sortOrder));
+    const showFilterOpen =
+      Boolean(filters.userName || filters.title || filters.category) ||
+      sortField !== DEFAULT_SORT_FIELD ||
+      sortOrder !== DEFAULT_SORT_ORDER;
     res.render('like/index', {
       title: 'おすすめ商品の紹介',
       projectName: 'Payment',
@@ -173,6 +127,7 @@ router.get(
       sortOrderOptions: SORT_ORDER_OPTIONS,
       sortField,
       sortOrder,
+      showFilterOpen,
     });
   })
 );
