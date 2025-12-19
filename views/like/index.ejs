@@ -114,6 +114,32 @@
                   <% }) %>
               </tbody>
             </table>
+            <% if (pagination && pagination.totalPages > 1) { %>
+              <nav class="pagination-bar" aria-label="おすすめ一覧ページネーション">
+                <div class="pagination-summary">
+                  <span>全<%= pagination.totalItems %>件中 <%= pagination.currentPage %>/<%= pagination.totalPages %>ページ</span>
+                </div>
+                <div class="pagination-links">
+                  <% if (pagination.hasPrev) { %>
+                    <a href="/like?<%= pagination.prevQuery %>" class="pagination-link">前へ</a>
+                  <% } else { %>
+                    <span class="pagination-link disabled">前へ</span>
+                  <% } %>
+                  <% pagination.pages.forEach(function(page) { %>
+                    <% if (page.isCurrent) { %>
+                      <span class="pagination-link current"><%= page.number %></span>
+                    <% } else { %>
+                      <a href="/like?<%= page.query %>" class="pagination-link"><%= page.number %></a>
+                    <% } %>
+                  <% }); %>
+                  <% if (pagination.hasNext) { %>
+                    <a href="/like?<%= pagination.nextQuery %>" class="pagination-link">次へ</a>
+                  <% } else { %>
+                    <span class="pagination-link disabled">次へ</span>
+                  <% } %>
+                </div>
+              </nav>
+            <% } %>
             <% } else { %>
               <div class="text-center">
                 <h2>おすすめがありません!!</h2>

@@ -29,6 +29,7 @@ const SORT_ORDER_OPTIONS = [
 const SORT_ORDER_VALUE_SET = new Set(SORT_ORDER_OPTIONS.map((opt) => opt.value));
 const DEFAULT_SORT_FIELD = 'createdAt';
 const DEFAULT_SORT_ORDER = 'desc';
+const PAGE_SIZE = 10;
 
 function asyncHandler(handler) {
   return function (req, res, next) {
@@ -90,6 +91,13 @@ function normalizeSortOrder(order) {
   return SORT_ORDER_VALUE_SET.has(order) ? order : DEFAULT_SORT_ORDER;
 }
 
+function buildQueryString(params) {
+  return Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+}
+
 /* GET like page. */
 router.get(
   '/',
@@ -100,6 +108,8 @@ router.get(
       title: (req.query.title || '').trim(),
       category: selectedCategory,
     };
+    const requestedPage = parseInt(req.query.page || '1', 10);
+    const currentPage = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage;
     const sortField = normalizeSortField(req.query.sort);
     const sortOrder = normalizeSortOrder(req.query.order);
     const content = await listLikes({
@@ -113,6 +123,38 @@ router.get(
       const titleLower = filters.title.toLowerCase();
       filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
     }
+    const totalItems = filteredContent.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    const safePage = Math.min(currentPage, totalPages);
+    const startIndex = (safePage - 1) * PAGE_SIZE;
+    const paginatedContent = filteredContent.slice(startIndex, startIndex + PAGE_SIZE);
+    const buildFilterQuery = (pageNumber) =>
+      buildQueryString({
+        userName: filters.userName,
+        title: filters.title,
+        category: filters.category,
+        sort: sortField,
+        order: sortOrder,
+        page: pageNumber,
+      });
+    const pagination = {
+      currentPage: safePage,
+      totalPages,
+      totalItems,
+      pageSize: PAGE_SIZE,
+      hasPrev: safePage > 1,
+      hasNext: safePage < totalPages,
+      prevQuery: safePage > 1 ? buildFilterQuery(safePage - 1) : null,
+      nextQuery: safePage < totalPages ? buildFilterQuery(safePage + 1) : null,
+      pages: Array.from({ length: totalPages }, (_, idx) => {
+        const pageNumber = idx + 1;
+        return {
+          number: pageNumber,
+          query: buildFilterQuery(pageNumber),
+          isCurrent: pageNumber === safePage,
+        };
+      }),
+    };
     const showFilterOpen =
       Boolean(filters.userName || filters.title || filters.category) ||
       sortField !== DEFAULT_SORT_FIELD ||
@@ -121,13 +163,14 @@ router.get(
       title: 'おすすめ商品の紹介',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
-      content: filteredContent,
+      content: paginatedContent,
       likeCategories: LIKE_CATEGORIES,
       filters,
       sortOptions: LIKE_SORT_OPTIONS,
       sortOrderOptions: SORT_ORDER_OPTIONS,
       sortField,
       sortOrder,
+      pagination,
       showFilterOpen,
     });
   })
