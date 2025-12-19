@@ -122,7 +122,7 @@
                 </div>
                 <div class="pagination-links" role="list">
                   <% if (pagination.hasPrev) { %>
-                    <a href="/like?<%= pagination.prevQuery %>" class="pagination-link arrow" aria-label="前のページ">
+                    <a href="/like?<%- pagination.prevQuery %>" class="pagination-link arrow" aria-label="前のページ">
                       ‹
                     </a>
                   <% } else { %>
@@ -132,11 +132,11 @@
                     <% if (page.isCurrent) { %>
                       <span class="pagination-link current" aria-current="page"><%= page.number %></span>
                     <% } else { %>
-                      <a href="/like?<%= page.query %>" class="pagination-link"><%= page.number %></a>
+                      <a href="/like?<%- page.query %>" class="pagination-link"><%= page.number %></a>
                     <% } %>
                   <% }); %>
                   <% if (pagination.hasNext) { %>
-                    <a href="/like?<%= pagination.nextQuery %>" class="pagination-link arrow" aria-label="次のページ">
+                    <a href="/like?<%- pagination.nextQuery %>" class="pagination-link arrow" aria-label="次のページ">
                       ›
                     </a>
                   <% } else { %>
@@ -151,7 +151,7 @@
                 <p>おすすめを追加してください!!</p>
               </div>
               <% } %>
-                <a href="/like/add" class="btn btn-primary pagination-add-action">おすすめを追加</a>
+              <a href="/like/add" class="btn btn-primary pagination-add-action">おすすめを追加</a>
         </section>
       </div>
       <footer>
