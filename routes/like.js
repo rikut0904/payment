@@ -15,6 +15,20 @@ const LIKE_CATEGORIES = [
   'ギフト',
   'その他',
 ];
+const LIKE_SORT_OPTIONS = [
+  { value: 'userName', label: 'ユーザー名' },
+  { value: 'title', label: '商品名' },
+  { value: 'date', label: '購入日' },
+  { value: 'createdAt', label: 'おすすめ登録日' },
+];
+const LIKE_SORT_VALUE_SET = new Set(LIKE_SORT_OPTIONS.map((opt) => opt.value));
+const SORT_ORDER_OPTIONS = [
+  { value: 'asc', label: '昇順' },
+  { value: 'desc', label: '降順' },
+];
+const SORT_ORDER_VALUE_SET = new Set(SORT_ORDER_OPTIONS.map((opt) => opt.value));
+const DEFAULT_SORT_FIELD = 'createdAt';
+const DEFAULT_SORT_ORDER = 'desc';
 
 function asyncHandler(handler) {
   return function (req, res, next) {
@@ -68,20 +82,53 @@ function extractLikeData(body) {
   };
 }
 
+function normalizeSortField(sortField) {
+  return LIKE_SORT_VALUE_SET.has(sortField) ? sortField : DEFAULT_SORT_FIELD;
+}
+
+function normalizeSortOrder(order) {
+  return SORT_ORDER_VALUE_SET.has(order) ? order : DEFAULT_SORT_ORDER;
+}
+
 /* GET like page. */
 router.get(
   '/',
   asyncHandler(async function (req, res) {
-    const selectedCategory = req.query.category;
-    const validCategory = LIKE_CATEGORIES.includes(selectedCategory) ? selectedCategory : '';
-    const content = await listLikes({ category: validCategory || undefined });
+    const selectedCategory = LIKE_CATEGORIES.includes(req.query.category) ? req.query.category : '';
+    const filters = {
+      userName: (req.query.userName || '').trim(),
+      title: (req.query.title || '').trim(),
+      category: selectedCategory,
+    };
+    const sortField = normalizeSortField(req.query.sort);
+    const sortOrder = normalizeSortOrder(req.query.order);
+    const content = await listLikes({
+      category: filters.category || undefined,
+      userName: filters.userName || undefined,
+      sortField,
+      sortOrder,
+    });
+    let filteredContent = content;
+    if (filters.title) {
+      const titleLower = filters.title.toLowerCase();
+      filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
+    }
+    const showFilterOpen =
+      Boolean(filters.userName || filters.title || filters.category) ||
+      sortField !== DEFAULT_SORT_FIELD ||
+      sortOrder !== DEFAULT_SORT_ORDER;
     res.render('like/index', {
-      title: 'おすすめ',
+      title: 'おすすめ商品の紹介',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
-      content,
+      content: filteredContent,
       likeCategories: LIKE_CATEGORIES,
-      selectedCategory: validCategory,
+      filters,
+      sortOptions: LIKE_SORT_OPTIONS,
+      sortOrderOptions: SORT_ORDER_OPTIONS,
+      sortField,
+      sortOrder,
+      showFilterOpen,
     });
   })
 );
