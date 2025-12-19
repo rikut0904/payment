@@ -27,19 +27,19 @@
                   <div class="filter-field">
                     <label for="filterUserName">ユーザー名</label>
                     <input type="text" id="filterUserName" name="userName" placeholder="例: 田中"
-                      value="<%= (filters && filters.userName) || '' %>">
+                      value="<%= filters.userName || '' %>">
                   </div>
                   <div class="filter-field">
                     <label for="filterTitle">商品名</label>
                     <input type="text" id="filterTitle" name="title" placeholder="部分一致で検索"
-                      value="<%= (filters && filters.title) || '' %>">
+                      value="<%= filters.title || '' %>">
                   </div>
                   <div class="filter-field">
                     <label for="categoryFilter">カテゴリ</label>
                     <select id="categoryFilter" name="category">
-                      <option value="" <%=!(filters && filters.category) ? 'selected' : '' %>>すべて</option>
+                      <option value="" <%=!filters.category ? 'selected' : '' %>>すべて</option>
                       <% (likeCategories || []).forEach(function(category) { %>
-                        <option value="<%= category %>" <%=(filters && filters.category)===category ? 'selected' : '' %>>
+                        <option value="<%= category %>" <%=filters.category===category ? 'selected' : '' %>>
                           <%= category %>
                         </option>
                         <% }) %>
