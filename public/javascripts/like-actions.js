@@ -31,50 +31,46 @@
     });
   }
 
-  function setupDeleteForms() {
-    document.querySelectorAll('.delete-form').forEach((form) => {
-      const handler = async function (event) {
-        const message = 'このおすすめを削除しますか？';
-        if (!window.confirm(message)) {
-          event.preventDefault();
-          return;
-        }
-        if (form.dataset.ajax !== 'true') {
-          return;
-        }
-        event.preventDefault();
-        try {
-          const response = await fetch(form.getAttribute('action'), {
-            method: 'POST',
-            headers: { Accept: 'application/json' },
-          });
-          if (!response.ok) {
-            const body = await response.json().catch(() => null);
-            alert(body?.error || '削除に失敗しました。');
-            return;
-          }
-          const result = await response.json().catch(() => null);
-          if (!result?.success) {
-            alert(result?.error || '削除に失敗しました。');
-            return;
-          }
-          window.location.reload();
-        } catch (err) {
-          alert('通信エラーが発生しました。時間をおいてから再度お試しください。');
-        }
-      };
-      const existingHandler = form._deleteHandler;
-      if (existingHandler) {
-        form.removeEventListener('submit', existingHandler);
+  async function handleDeleteLinkClick(event) {
+    event.preventDefault();
+    const link = event.currentTarget;
+    const id = link.dataset.id;
+    if (!id) return;
+    const message = 'このおすすめを削除しますか？';
+    if (!window.confirm(message)) {
+      return;
+    }
+    try {
+      const response = await fetch(`/like/delete/${id}`, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        alert(body?.error || '削除に失敗しました。');
+        return;
       }
-      form._deleteHandler = handler;
-      form.addEventListener('submit', handler);
+      const result = await response.json().catch(() => null);
+      if (!result?.success) {
+        alert(result?.error || '削除に失敗しました。');
+        return;
+      }
+      window.location.reload();
+    } catch (err) {
+      alert('通信エラーが発生しました。時間をおいてから再度お試しください。');
+    }
+  }
+
+  function setupDeleteLinks() {
+    document.querySelectorAll('.delete-link').forEach((link) => {
+      link.removeEventListener('click', handleDeleteLinkClick);
+      link.addEventListener('click', handleDeleteLinkClick);
     });
   }
 
   function init() {
     setupEditLinks();
-    setupDeleteForms();
+    setupDeleteLinks();
   }
 
   if (document.readyState === 'loading') {
