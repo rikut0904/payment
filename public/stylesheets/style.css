@@ -232,19 +232,50 @@ footer {
 
 .filter-form {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 16px;
   margin: 0;
-  flex-wrap: wrap;
 }
 
 .filter-form label {
   margin: 0;
 }
 
-.filter-form select {
-  min-width: 220px;
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-field select {
+  min-width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-form button[type='submit'] {
+  align-self: flex-start;
+}
+
+.reset-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.reset-link:hover {
+  text-decoration: underline;
 }
 
 .material-icons {

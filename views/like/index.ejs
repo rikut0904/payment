@@ -16,21 +16,58 @@
     <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
-          <h2>おすすめ</h2>
+          <h2>
+            <%= title %>
+          </h2>
           <div class="filter-bar">
             <form class="filter-form" method="get" action="/like">
-              <label for="categoryFilter">カテゴリで絞り込み</label>
-              <select id="categoryFilter" name="category" onchange="this.form.submit()">
-                <option value="" <%=!selectedCategory ? 'selected' : '' %>>すべて</option>
-                <% (likeCategories || []).forEach(function(category) { %>
-                  <option value="<%= category %>" <%=selectedCategory===category ? 'selected' : '' %>>
-                    <%= category %>
-                  </option>
-                  <% }) %>
-              </select>
-              <noscript>
-                <button type="submit">絞り込む</button>
-              </noscript>
+              <div class="filter-grid">
+                <div class="filter-field">
+                  <label for="filterUserName">ユーザー名</label>
+                  <input type="text" id="filterUserName" name="userName" placeholder="例: 田中"
+                    value="<%= (filters && filters.userName) || '' %>">
+                </div>
+                <div class="filter-field">
+                  <label for="filterTitle">商品名</label>
+                  <input type="text" id="filterTitle" name="title" placeholder="部分一致で検索"
+                    value="<%= (filters && filters.title) || '' %>">
+                </div>
+                <div class="filter-field">
+                  <label for="categoryFilter">カテゴリ</label>
+                  <select id="categoryFilter" name="category">
+                    <option value="" <%=!(filters && filters.category) ? 'selected' : '' %>>すべて</option>
+                    <% (likeCategories || []).forEach(function(category) { %>
+                      <option value="<%= category %>" <%=(filters && filters.category)===category ? 'selected' : '' %>>
+                        <%= category %>
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
+                <div class="filter-field">
+                  <label for="sortField">ソート項目</label>
+                  <select id="sortField" name="sort">
+                    <% (sortOptions || []).forEach(function(option) { %>
+                      <option value="<%= option.value %>" <%=sortField===option.value ? 'selected' : '' %>>
+                        <%= option.label %>
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
+                <div class="filter-field">
+                  <label for="sortOrder">並び順</label>
+                  <select id="sortOrder" name="order">
+                    <% (sortOrderOptions || []).forEach(function(option) { %>
+                      <option value="<%= option.value %>" <%=sortOrder===option.value ? 'selected' : '' %>>
+                        <%= option.label %>
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
+              </div>
+              <div class="filter-actions">
+                <button type="submit">条件を適用</button>
+                <a href="/like" class="reset-link">リセット</a>
+              </div>
             </form>
           </div>
           <% if(content && content.length) { %>
