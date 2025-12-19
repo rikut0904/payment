@@ -22,6 +22,15 @@
                         <input type="text" id="title" name="title" required>
                         <label for="contentText">商品概要（任意）</label>
                         <textarea id="contentText" name="contentText" placeholder="商品の特徴やメモなど"></textarea>
+                        <label for="category">カテゴリ（必須）</label>
+                        <select id="category" name="category" required>
+                            <option value="" disabled selected>カテゴリを選択</option>
+                            <% likeCategories.forEach(function(category) { %>
+                                <option value="<%= category %>">
+                                    <%= category %>
+                                </option>
+                                <% }) %>
+                        </select>
                         <label for="date">私の購入日（必須）</label>
                         <input type="date" id="date" name="date" required>
                         <label for="url">購入先URL（任意）</label>

@@ -3,6 +3,19 @@ var createError = require('http-errors');
 var router = express.Router();
 var { listLikes, addLikeEntry, getLikeById, updateLikeEntry, deleteLikeEntry } = require('../lib/firestoreLikes');
 
+const LIKE_CATEGORIES = [
+  '衣類',
+  '日用品',
+  '家具',
+  '家電',
+  'PC周辺機器',
+  'ホビー',
+  '本',
+  '食品',
+  'ギフト',
+  'その他',
+];
+
 function asyncHandler(handler) {
   return function (req, res, next) {
     Promise.resolve(handler(req, res, next)).catch(next);
@@ -28,9 +41,12 @@ function respondForbidden(req, res, message) {
 }
 
 function extractLikeData(body) {
-  const { date, title, contentText, url, image } = body || {};
+  const { date, title, contentText, url, image, category } = body || {};
   if (!date || !title) {
     return { error: '必須項目が未入力です。' };
+  }
+  if (!category || !LIKE_CATEGORIES.includes(category)) {
+    return { error: 'カテゴリを選択してください。' };
   }
   const trimmedUrl = (url || '').trim();
   if (trimmedUrl && !(trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://'))) {
@@ -47,6 +63,7 @@ function extractLikeData(body) {
       content: (contentText || '').trim(),
       url: trimmedUrl,
       image: trimmedImage,
+      category,
     },
   };
 }
@@ -55,12 +72,16 @@ function extractLikeData(body) {
 router.get(
   '/',
   asyncHandler(async function (req, res) {
-    const content = await listLikes();
+    const selectedCategory = req.query.category;
+    const validCategory = LIKE_CATEGORIES.includes(selectedCategory) ? selectedCategory : '';
+    const content = await listLikes({ category: validCategory || undefined });
     res.render('like/index', {
       title: 'おすすめ',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
       content,
+      likeCategories: LIKE_CATEGORIES,
+      selectedCategory: validCategory,
     });
   })
 );
@@ -70,6 +91,7 @@ router.get('/add', function (req, res) {
     title: 'おすすめを追加',
     projectName: 'Payment',
     firebaseConfig: req.app.locals.firebaseConfig,
+    likeCategories: LIKE_CATEGORIES,
   });
 });
 
@@ -116,6 +138,7 @@ router.get(
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
       entry,
+      likeCategories: LIKE_CATEGORIES,
     });
   })
 );

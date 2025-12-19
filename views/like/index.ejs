@@ -17,12 +17,29 @@
       <div class="content">
         <section class="card">
           <h2>おすすめ</h2>
+          <div class="filter-bar">
+            <form class="filter-form" method="get" action="/like">
+              <label for="categoryFilter">カテゴリで絞り込み</label>
+              <select id="categoryFilter" name="category" onchange="this.form.submit()">
+                <option value="" <%=!selectedCategory ? 'selected' : '' %>>すべて</option>
+                <% (likeCategories || []).forEach(function(category) { %>
+                  <option value="<%= category %>" <%=selectedCategory===category ? 'selected' : '' %>>
+                    <%= category %>
+                  </option>
+                  <% }) %>
+              </select>
+              <noscript>
+                <button type="submit">絞り込む</button>
+              </noscript>
+            </form>
+          </div>
           <% if(content && content.length) { %>
             <table class="table">
               <thead>
                 <tr>
                   <th>ユーザー名</th>
                   <th>商品名</th>
+                  <th>カテゴリ</th>
                   <th>私の購入日</th>
                   <th>操作</th>
                 </tr>
@@ -37,6 +54,9 @@
                       <a href="/like/detail/<%= item.id %>">
                         <%= truncate(item.title, 30) %>
                       </a>
+                    </td>
+                    <td>
+                      <%= item.category || '未分類' %>
                     </td>
                     <td>
                       <%= item.date || '' %>
