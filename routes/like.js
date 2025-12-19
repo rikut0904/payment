@@ -30,6 +30,8 @@ const SORT_ORDER_VALUE_SET = new Set(SORT_ORDER_OPTIONS.map((opt) => opt.value))
 const DEFAULT_SORT_FIELD = 'createdAt';
 const DEFAULT_SORT_ORDER = 'desc';
 const PAGE_SIZE = 10;
+const DEFAULT_VISIBLE_DAYS = 7;
+const LIKE_VISIBLE_DURATION_MS = getVisibleDurationMs();
 
 function asyncHandler(handler) {
   return function (req, res, next) {
@@ -91,6 +93,48 @@ function normalizeSortOrder(order) {
   return SORT_ORDER_VALUE_SET.has(order) ? order : DEFAULT_SORT_ORDER;
 }
 
+function getVisibleDurationMs() {
+  const envMinutes = parseFloat(process.env.LIKE_VISIBLE_MINUTES || '');
+  if (Number.isFinite(envMinutes) && envMinutes > 0) {
+    return envMinutes * 60 * 1000;
+  }
+  const envHours = parseFloat(process.env.LIKE_VISIBLE_HOURS || '');
+  if (Number.isFinite(envHours) && envHours > 0) {
+    return envHours * 60 * 60 * 1000;
+  }
+  const envDays = parseFloat(process.env.LIKE_VISIBLE_DAYS || '');
+  const days = Number.isFinite(envDays) && envDays > 0 ? envDays : DEFAULT_VISIBLE_DAYS;
+  return days * 24 * 60 * 60 * 1000;
+}
+
+function getTimestampDate(value) {
+  if (!value) {
+    return null;
+  }
+  if (value instanceof Date) {
+    return value;
+  }
+  if (typeof value.toDate === 'function') {
+    const converted = value.toDate();
+    return converted instanceof Date ? converted : null;
+  }
+  if (typeof value === 'number') {
+    const fromNumber = new Date(value);
+    return Number.isNaN(fromNumber.getTime()) ? null : fromNumber;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function shouldDisplayEntry(entry, nowMs, visibleDurationMs) {
+  const createdAtDate = getTimestampDate(entry?.createdAt);
+  if (!createdAtDate) {
+    return true;
+  }
+  const ageMs = nowMs - createdAtDate.getTime();
+  return ageMs <= visibleDurationMs;
+}
+
 function buildQueryString(params) {
   return Object.entries(params)
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
@@ -118,7 +162,9 @@ router.get(
       sortField,
       sortOrder,
     });
-    let filteredContent = content;
+    const nowMs = Date.now();
+    const visibleContent = content.filter((item) => shouldDisplayEntry(item, nowMs, LIKE_VISIBLE_DURATION_MS));
+    let filteredContent = visibleContent;
     if (filters.title) {
       const titleLower = filters.title.toLowerCase();
       filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
