@@ -21,10 +21,12 @@ const LIKE_SORT_OPTIONS = [
   { value: 'date', label: '購入日' },
   { value: 'createdAt', label: 'おすすめ登録日' },
 ];
+const LIKE_SORT_VALUE_SET = new Set(LIKE_SORT_OPTIONS.map((opt) => opt.value));
 const SORT_ORDER_OPTIONS = [
   { value: 'asc', label: '昇順' },
   { value: 'desc', label: '降順' },
 ];
+const SORT_ORDER_VALUE_SET = new Set(SORT_ORDER_OPTIONS.map((opt) => opt.value));
 const DEFAULT_SORT_FIELD = 'createdAt';
 const DEFAULT_SORT_ORDER = 'desc';
 
@@ -81,12 +83,11 @@ function extractLikeData(body) {
 }
 
 function normalizeSortField(sortField) {
-  const validValues = LIKE_SORT_OPTIONS.map((opt) => opt.value);
-  return validValues.includes(sortField) ? sortField : DEFAULT_SORT_FIELD;
+  return LIKE_SORT_VALUE_SET.has(sortField) ? sortField : DEFAULT_SORT_FIELD;
 }
 
 function normalizeSortOrder(order) {
-  return SORT_ORDER_OPTIONS.some((opt) => opt.value === order) ? order : DEFAULT_SORT_ORDER;
+  return SORT_ORDER_VALUE_SET.has(order) ? order : DEFAULT_SORT_ORDER;
 }
 
 /* GET like page. */
