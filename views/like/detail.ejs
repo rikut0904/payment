@@ -55,10 +55,9 @@
                   <% } %>
             </div>
           </div>
-          <% const safeListPath = redirectPath || '/like'; %>
           <div class="actions">
-            <a href="<%= safeListPath %>" class="btn">一覧へ戻る</a>
-            <a href="/like/update/<%= entry.id %>?redirect=<%= encodeURIComponent(safeListPath) %>&returnToDetail=1" class="btn edit-link">編集する</a>
+            <a href="<%= redirectPath %>" class="btn">一覧へ戻る</a>
+            <a href="/like/update/<%= entry.id %>?redirect=<%= encodeURIComponent(redirectPath) %>&returnToDetail=1" class="btn edit-link">編集する</a>
           </div>
         </section>
       </div>

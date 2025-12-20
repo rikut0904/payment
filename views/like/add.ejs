@@ -17,9 +17,8 @@
                 <section class="card">
                     <h2>おすすめを共有</h2>
                     <p>商品名と購入日は必須です。商品概要と購入先URLは任意で入力してください。</p>
-                    <% const redirectDestination = (typeof redirectPath === 'string' && redirectPath.trim()) ? redirectPath : '/like'; %>
                     <form action="/like/add" method="post">
-                        <input type="hidden" name="redirect" value="<%= redirectDestination %>">
+                        <input type="hidden" name="redirect" value="<%= redirectPath %>">
                         <label for="title">商品名（必須）</label>
                         <input type="text" id="title" name="title" required>
                         <label for="contentText">商品概要（任意）</label>
