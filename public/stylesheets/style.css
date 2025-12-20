@@ -471,3 +471,246 @@ footer {
     justify-content: flex-start;
   }
 }
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: none;
+}
+
+.btn.btn-outline:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.card-panel__body.card-panel__actions {
+  border-top: none;
+  padding-top: 0;
+}
+
+.card-panel__actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.alert {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-left: 4px solid transparent;
+  font-weight: 600;
+}
+
+.alert-success {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.alert-error {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field--wide {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.card-panel {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.card-panel__subtitle {
+  margin: 8px 0 0;
+  color: var(--text-sub);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-panel__meta {
+  display: flex;
+  gap: 24px;
+  margin: 0;
+}
+
+.card-panel__meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-panel__meta dt {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+
+.card-panel__meta dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-panel__body {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.card-panel__body h5 {
+  margin-top: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.muted {
+  color: var(--text-sub);
+  font-style: italic;
+}
+
+.warning {
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.warning-list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--text-sub);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.summary-label {
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.required {
+  color: var(--error);
+  margin-left: 4px;
+  font-size: 0.85em;
+}
+.card-subscription-accordion {
+  border-top: 1px solid var(--border);
+  padding-top: 0;
+}
+
+.card-subscription-accordion summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 16px 0;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-main);
+}
+
+.card-subscription-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.card-subscription-accordion .badge-light {
+  background: rgba(31, 41, 55, 0.1);
+  color: var(--text-main);
+}
+
+.card-subscription-accordion[open] .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-icon {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}

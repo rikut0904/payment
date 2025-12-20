@@ -11,15 +11,201 @@
 <body data-skip-auth-redirect="true">
   <div class="layout">
     <%- include('../partials/header', { title }) %>
-    <div class="content">
-      <section class="card">
-        <h2>支払情報管理</h2>
-        <p>支払情報管理はここに表示されます</p>
-      </section>
-    </div>
-    <footer>
-      <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
-    </footer>
+      <div class="content">
+        <section class="card">
+          <h2><%= title %></h2>
+          <% if (typeof notice !=='undefined' && notice) { %>
+            <div class="alert alert-success">
+              <%= notice %>
+            </div>
+            <% } %>
+              <% if (typeof error !=='undefined' && error) { %>
+                <div class="alert alert-error">
+                  <%= error %>
+                </div>
+                <% } %>
+                  <div class="action-buttons">
+                    <a href="/card/add" class="btn">カードを登録</a>
+                    <a href="/card/subscription" class="btn btn-outline">サブスクリプションを登録</a>
+                  </div>
+        </section>
+
+        <section class="card">
+          <h3>登録済みカード</h3>
+          <% if (cards && cards.length) { %>
+            <div class="card-list">
+              <% cards.forEach(function(card) { %>
+                <article class="card-panel">
+                  <header class="card-panel__header">
+                    <div>
+                      <h4>
+                        <%= card.cardName %>
+                      </h4>
+                      <p class="card-panel__subtitle">
+                        <span class="badge">
+                          <%= card.cardBrand || 'その他' %>
+                        </span>
+                        <span>末尾: **** <%= card.last4Digits || '----' %></span>
+                      </p>
+                    </div>
+                    <dl class="card-panel__meta">
+                      <div>
+                        <dt>締め日</dt>
+                        <dd>
+                          <%= card.billingDayDisplay %>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>利用上限</dt>
+                        <dd>
+                          <%= card.limitAmountDisplay %>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>サブスク合計 (月)</dt>
+                        <dd>
+                          <%= card.formattedSubscriptionTotal %>
+                        </dd>
+                      </div>
+                    </dl>
+                  </header>
+                  <details class="card-subscription-accordion" <%=card.subscriptions && card.subscriptions.length ? ''
+                    : 'open' %>>
+                    <summary>
+                      <span>紐づくサブスクリプション</span>
+                      <% if (card.subscriptions && card.subscriptions.length) { %>
+                        <span class="badge badge-light">
+                          <%= card.subscriptions.length %>件
+                        </span>
+                        <% } %>
+                          <span class="accordion-icon" aria-hidden="true">▼</span>
+                    </summary>
+                    <div class="card-panel__body">
+                      <% if (card.subscriptions && card.subscriptions.length) { %>
+                        <div class="table-wrapper">
+                          <table class="table">
+                            <thead>
+                              <tr>
+                                <th>サービス名</th>
+                                <th>金額</th>
+                                <th>サイクル</th>
+                                <th>登録メール</th>
+                                <th>課金日</th>
+                                <th>備考</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% card.subscriptions.forEach(function(sub) { %>
+                                <tr>
+                                  <td>
+                                    <%= sub.serviceName %>
+                                  </td>
+                                  <td>
+                                    <%= sub.formattedAmount %>
+                                  </td>
+                                  <td>
+                                    <%= sub.cycleLabel %>
+                                  </td>
+                                  <td>
+                                    <%= sub.registeredEmail || '-' %>
+                                  </td>
+                                  <td>
+                                    <%= sub.billingDayDisplay %>
+                                  </td>
+                                  <td>
+                                    <%= sub.notes || '-' %>
+                                  </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                          </table>
+                        </div>
+                        <% } else { %>
+                          <p class="muted">このカードに紐づくサブスクリプションはまだありません。</p>
+                          <% } %>
+                    </div>
+                    <div class="card-panel__body card-panel__actions">
+                      <a class="btn btn-outline" href="/card/add-subscription?cardId=<%= card.id %>">このカードにサブスクを追加</a>
+                    </div>
+                  </details>
+                </article>
+                <% }); %>
+            </div>
+            <% } else { %>
+              <p class="muted">まだカードが登録されていません。まずはカードを追加してください。</p>
+              <% } %>
+        </section>
+
+        <% if (unlinkedSubscriptions && unlinkedSubscriptions.length) { %>
+          <section class="card warning">
+            <h3>カード未紐付けのサブスクリプション</h3>
+            <p>カードが削除された、または未登録の状態で作成されたサブスクリプションが存在します。</p>
+            <ul class="warning-list">
+              <% unlinkedSubscriptions.forEach(function(sub) { %>
+                <li><strong>
+                    <%= sub.serviceName %>
+                  </strong> - <%= sub.formattedAmount %> / 課金日: <%= sub.billingDayDisplay %>
+                </li>
+                <% }); %>
+            </ul>
+          </section>
+          <% } %>
+
+            <section class="card">
+              <h3>今後の支払い予定</h3>
+              <% if (monthlyTotals && monthlyTotals.length) { %>
+                <div class="summary-grid">
+                  <% monthlyTotals.forEach(function(month) { %>
+                    <div class="summary-item">
+                      <span class="summary-label">
+                        <%= month.monthLabel %>
+                      </span>
+                      <span class="summary-value">
+                        <%= month.formattedTotal %>
+                      </span>
+                    </div>
+                    <% }); %>
+                </div>
+                <% } %>
+                  <% if (upcomingPayments && upcomingPayments.length) { %>
+                    <div class="table-wrapper">
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th>支払日</th>
+                            <th>サービス</th>
+                            <th>カード</th>
+                            <th>金額</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% upcomingPayments.forEach(function(payment) { %>
+                            <tr>
+                              <td>
+                                <%= payment.formattedDate %>
+                              </td>
+                              <td>
+                                <%= payment.subscriptionName %>
+                              </td>
+                              <td>
+                                <%= payment.cardName %>
+                              </td>
+                              <td>
+                                <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
+                              </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                      </table>
+                    </div>
+                    <% } else { %>
+                      <p class="muted">今後の支払い予定はまだ登録されていません。</p>
+                      <% } %>
+            </section>
+      </div>
+      <footer>
+        <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+      </footer>
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
