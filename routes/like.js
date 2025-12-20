@@ -142,6 +142,20 @@ function buildQueryString(params) {
     .join('&');
 }
 
+function resolveRedirectPath(value, fallback = '/like') {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  if (!trimmed.startsWith('/')) {
+    return fallback;
+  }
+  return trimmed;
+}
+
 /* GET like page. */
 router.get(
   '/',
@@ -205,6 +219,9 @@ router.get(
       Boolean(filters.userName || filters.title || filters.category) ||
       sortField !== DEFAULT_SORT_FIELD ||
       sortOrder !== DEFAULT_SORT_ORDER;
+    const baseListPath = '/like';
+    const currentQuery = buildFilterQuery(safePage);
+    const currentListUrl = currentQuery ? `${baseListPath}?${currentQuery}` : baseListPath;
     res.render('like/index', {
       title: 'おすすめ商品の紹介',
       projectName: 'Payment',
@@ -218,16 +235,105 @@ router.get(
       sortOrder,
       pagination,
       showFilterOpen,
+      filterAction: baseListPath,
+      listPath: baseListPath,
+      showUserNameFilter: true,
+      currentListUrl,
+    });
+  })
+);
+
+router.get(
+  '/me',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/like');
+    }
+    const selectedCategory = LIKE_CATEGORIES.includes(req.query.category) ? req.query.category : '';
+    const filters = {
+      title: (req.query.title || '').trim(),
+      category: selectedCategory,
+    };
+    const requestedPage = parseInt(req.query.page || '1', 10);
+    const currentPage = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage;
+    const sortField = normalizeSortField(req.query.sort);
+    const sortOrder = normalizeSortOrder(req.query.order);
+    const content = await listLikes({
+      category: filters.category || undefined,
+      userId: sessionUid,
+      sortField,
+      sortOrder,
+    });
+    let filteredContent = content;
+    if (filters.title) {
+      const titleLower = filters.title.toLowerCase();
+      filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
+    }
+    const totalItems = filteredContent.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    const safePage = Math.min(currentPage, totalPages);
+    const startIndex = (safePage - 1) * PAGE_SIZE;
+    const paginatedContent = filteredContent.slice(startIndex, startIndex + PAGE_SIZE);
+    const buildFilterQuery = (pageNumber) =>
+      buildQueryString({
+        title: filters.title,
+        category: filters.category,
+        sort: sortField,
+        order: sortOrder,
+        page: pageNumber,
+      });
+    const pagination = {
+      currentPage: safePage,
+      totalPages,
+      totalItems,
+      pageSize: PAGE_SIZE,
+      hasPrev: safePage > 1,
+      hasNext: safePage < totalPages,
+      prevQuery: safePage > 1 ? buildFilterQuery(safePage - 1) : null,
+      nextQuery: safePage < totalPages ? buildFilterQuery(safePage + 1) : null,
+      pages: Array.from({ length: totalPages }, (_, idx) => {
+        const pageNumber = idx + 1;
+        return {
+          number: pageNumber,
+          query: buildFilterQuery(pageNumber),
+          isCurrent: pageNumber === safePage,
+        };
+      }),
+    };
+    const showFilterOpen =
+      Boolean(filters.title || filters.category) || sortField !== DEFAULT_SORT_FIELD || sortOrder !== DEFAULT_SORT_ORDER;
+    const baseListPath = '/like/me';
+    const currentQuery = buildFilterQuery(safePage);
+    const currentListUrl = currentQuery ? `${baseListPath}?${currentQuery}` : baseListPath;
+    res.render('like/me', {
+      title: '自分のおすすめ一覧',
+      projectName: 'Payment',
+      firebaseConfig: req.app.locals.firebaseConfig,
+      content: paginatedContent,
+      likeCategories: LIKE_CATEGORIES,
+      filters,
+      sortOptions: LIKE_SORT_OPTIONS,
+      sortOrderOptions: SORT_ORDER_OPTIONS,
+      sortField,
+      sortOrder,
+      pagination,
+      showFilterOpen,
+      filterAction: baseListPath,
+      listPath: baseListPath,
+      currentListUrl,
     });
   })
 );
 
 router.get('/add', function (req, res) {
+  const redirectPath = resolveRedirectPath(req.query.redirect, '/like');
   res.render('like/add', {
     title: 'おすすめを追加',
     projectName: 'Payment',
     firebaseConfig: req.app.locals.firebaseConfig,
     likeCategories: LIKE_CATEGORIES,
+    redirectPath,
   });
 });
 
@@ -248,7 +354,8 @@ router.post(
       userName,
       ...data,
     });
-    res.redirect('/like');
+    const redirectPath = resolveRedirectPath(req.body.redirect, '/like');
+    res.redirect(redirectPath);
   })
 );
 
@@ -269,12 +376,16 @@ router.get(
     if (wantsJson) {
       return res.json({ success: true });
     }
+    const redirectPath = resolveRedirectPath(req.query.redirect, '/like');
+    const returnToDetail = req.query.returnToDetail === '1';
     res.render('like/update', {
       title: 'おすすめを編集',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
       entry,
       likeCategories: LIKE_CATEGORIES,
+      redirectPath,
+      returnToDetail,
     });
   })
 );
@@ -294,7 +405,12 @@ router.post(
       return res.status(400).send(error);
     }
     await updateLikeEntry(req.params.id, data);
-    res.redirect('/like');
+    const listRedirectPath = resolveRedirectPath(req.body.redirect, '/like');
+    if (req.body.returnToDetail === '1') {
+      const detailRedirect = `/like/detail/${req.params.id}?redirect=${encodeURIComponent(listRedirectPath)}`;
+      return res.redirect(detailRedirect);
+    }
+    res.redirect(listRedirectPath);
   })
 );
 
@@ -327,11 +443,13 @@ router.get(
     if (!entry) {
       return res.redirect('/like');
     }
+    const redirectPath = resolveRedirectPath(req.query.redirect, '/like');
     res.render('like/detail', {
       title: 'おすすめの詳細',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
       entry,
+      redirectPath,
     });
   })
 );

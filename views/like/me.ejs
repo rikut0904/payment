@@ -19,19 +19,12 @@
           <h2>
             <%= title %>
           </h2>
-          <% const safeListUrl = currentListUrl || listPath || '/like'; %>
+          <% const safeListUrl = currentListUrl || listPath || '/like/me'; %>
           <details class="filter-accordion" <%= showFilterOpen ? 'open' : '' %>>
             <summary>ソート・フィルタ条件</summary>
             <div class="filter-bar">
-              <form class="filter-form" method="get" action="<%= filterAction || '/like' %>">
+              <form class="filter-form" method="get" action="/like/me">
                 <div class="filter-grid">
-                  <% if (showUserNameFilter) { %>
-                    <div class="filter-field">
-                      <label for="filterUserName">ユーザー名</label>
-                      <input type="text" id="filterUserName" name="userName" placeholder="例: 田中"
-                        value="<%= filters.userName || '' %>">
-                    </div>
-                  <% } %>
                   <div class="filter-field">
                     <label for="filterTitle">商品名</label>
                     <input type="text" id="filterTitle" name="title" placeholder="部分一致で検索"
@@ -71,7 +64,7 @@
                 </div>
                 <div class="filter-actions">
                   <button type="submit">条件を適用</button>
-                  <a href="<%= listPath || '/like' %>" class="reset-link">リセット</a>
+                  <a href="/like/me" class="reset-link">リセット</a>
                 </div>
               </form>
             </div>
@@ -118,14 +111,14 @@
               </tbody>
             </table>
             <% if (pagination && pagination.totalPages > 1) { %>
-              <nav class="pagination-bar" aria-label="おすすめ一覧ページネーション">
+              <nav class="pagination-bar" aria-label="自分のおすすめ一覧ページネーション">
                 <div class="pagination-summary">
                   <span class="pagination-total">全<%= pagination.totalItems %>件</span>
                   <span class="pagination-current"><%= pagination.currentPage %>/<%= pagination.totalPages %>ページ</span>
                 </div>
                 <div class="pagination-links" role="list">
                   <% if (pagination.hasPrev) { %>
-                    <a href="<%= (listPath || '/like') %>?<%- pagination.prevQuery %>" class="pagination-link arrow" aria-label="前のページ">
+                    <a href="/like/me?<%- pagination.prevQuery %>" class="pagination-link arrow" aria-label="前のページ">
                       ‹
                     </a>
                   <% } else { %>
@@ -135,11 +128,11 @@
                     <% if (page.isCurrent) { %>
                       <span class="pagination-link current" aria-current="page"><%= page.number %></span>
                     <% } else { %>
-                      <a href="<%= (listPath || '/like') %>?<%- page.query %>" class="pagination-link"><%= page.number %></a>
+                      <a href="/like/me?<%- page.query %>" class="pagination-link"><%= page.number %></a>
                     <% } %>
                   <% }); %>
                   <% if (pagination.hasNext) { %>
-                    <a href="<%= (listPath || '/like') %>?<%- pagination.nextQuery %>" class="pagination-link arrow" aria-label="次のページ">
+                    <a href="/like/me?<%- pagination.nextQuery %>" class="pagination-link arrow" aria-label="次のページ">
                       ›
                     </a>
                   <% } else { %>
@@ -150,8 +143,8 @@
             <% } %>
             <% } else { %>
               <div class="text-center">
-                <h2>おすすめがありません!!</h2>
-                <p>おすすめを追加してください!!</p>
+                <h2>まだおすすめを追加していません</h2>
+                <p>「おすすめを追加」から最初の1件を登録しましょう。</p>
               </div>
               <% } %>
               <a href="/like/add?redirect=<%= encodeURIComponent(safeListUrl) %>" class="btn btn-primary pagination-add-action">おすすめを追加</a>
