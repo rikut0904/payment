@@ -134,13 +134,55 @@ function formatTimestampForDisplay(value) {
   return date.toLocaleString('ja-JP');
 }
 
-function shouldDisplayEntry(entry, nowMs, visibleDurationMs) {
-  const createdAtDate = getTimestampDate(entry?.createdAt);
-  if (!createdAtDate) {
-    return true;
+function shouldUseFirestorePagination(sortField, hasTitleFilter) {
+  return sortField === DEFAULT_SORT_FIELD && !hasTitleFilter;
+}
+
+function getComparableValue(entry, field) {
+  if (!entry) {
+    return '';
   }
-  const ageMs = nowMs - createdAtDate.getTime();
-  return ageMs <= visibleDurationMs;
+  if (field === 'createdAt') {
+    const createdAtDate = getTimestampDate(entry.createdAt);
+    return createdAtDate ? createdAtDate.getTime() : 0;
+  }
+  const value = entry[field];
+  if (value === undefined || value === null) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value.toLowerCase();
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (value && typeof value.toDate === 'function') {
+    const converted = getTimestampDate(value);
+    return converted ? converted.getTime() : 0;
+  }
+  return String(value).toLowerCase();
+}
+
+function sortEntriesInMemory(entries, field, order) {
+  const direction = order === 'asc' ? 1 : -1;
+  return entries
+    .slice()
+    .sort((a, b) => {
+      const valueA = getComparableValue(a, field);
+      const valueB = getComparableValue(b, field);
+      if (valueA < valueB) {
+        return -1 * direction;
+      }
+      if (valueA > valueB) {
+        return 1 * direction;
+      }
+      const idA = (a?.id || '').toLowerCase();
+      const idB = (b?.id || '').toLowerCase();
+      return idA.localeCompare(idB);
+    });
 }
 
 function buildQueryString(params) {
@@ -178,24 +220,45 @@ router.get(
     const currentPage = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage;
     const sortField = normalizeSortField(req.query.sort);
     const sortOrder = normalizeSortOrder(req.query.order);
-    const content = await listLikes({
+    const hasTitleFilter = Boolean(filters.title);
+    const useFirestorePagination = shouldUseFirestorePagination(sortField, hasTitleFilter);
+    const visibleSince = new Date(Date.now() - LIKE_VISIBLE_DURATION_MS);
+    const listResult = await listLikes({
       category: filters.category || undefined,
       userName: filters.userName || undefined,
       sortField,
       sortOrder,
+      visibleSince,
+      page: currentPage,
+      pageSize: PAGE_SIZE,
+      paginate: useFirestorePagination,
     });
-    const nowMs = Date.now();
-    const visibleContent = content.filter((item) => shouldDisplayEntry(item, nowMs, LIKE_VISIBLE_DURATION_MS));
-    let filteredContent = visibleContent;
-    if (filters.title) {
+    let workingContent = listResult.items || [];
+    if (!useFirestorePagination) {
+      workingContent = sortEntriesInMemory(workingContent, sortField, sortOrder);
+    }
+    let filteredContent = workingContent;
+    if (hasTitleFilter) {
       const titleLower = filters.title.toLowerCase();
       filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
     }
-    const totalItems = filteredContent.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-    const safePage = Math.min(currentPage, totalPages);
-    const startIndex = (safePage - 1) * PAGE_SIZE;
-    const paginatedContent = filteredContent.slice(startIndex, startIndex + PAGE_SIZE);
+    const needsManualPagination = !useFirestorePagination || hasTitleFilter;
+    let totalItems;
+    let totalPages;
+    let safePage;
+    let paginatedContent;
+    if (needsManualPagination) {
+      totalItems = filteredContent.length;
+      totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+      safePage = Math.min(currentPage, totalPages);
+      const startIndex = (safePage - 1) * PAGE_SIZE;
+      paginatedContent = filteredContent.slice(startIndex, startIndex + PAGE_SIZE);
+    } else {
+      totalItems = listResult.totalItems;
+      totalPages = listResult.totalPages;
+      safePage = listResult.currentPage;
+      paginatedContent = filteredContent;
+    }
     const buildFilterQuery = (pageNumber) =>
       buildQueryString({
         userName: filters.userName,
@@ -267,22 +330,45 @@ router.get(
     const currentPage = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage;
     const sortField = normalizeSortField(req.query.sort);
     const sortOrder = normalizeSortOrder(req.query.order);
-    const content = await listLikes({
+    const hasTitleFilter = Boolean(filters.title);
+    const useFirestorePagination = shouldUseFirestorePagination(sortField, hasTitleFilter);
+    const visibleSince = new Date(Date.now() - LIKE_VISIBLE_DURATION_MS);
+    const listResult = await listLikes({
       category: filters.category || undefined,
       userId: sessionUid,
       sortField,
       sortOrder,
+      visibleSince,
+      page: currentPage,
+      pageSize: PAGE_SIZE,
+      paginate: useFirestorePagination,
     });
-    let filteredContent = content;
-    if (filters.title) {
+    let workingContent = listResult.items || [];
+    if (!useFirestorePagination) {
+      workingContent = sortEntriesInMemory(workingContent, sortField, sortOrder);
+    }
+    let filteredContent = workingContent;
+    if (hasTitleFilter) {
       const titleLower = filters.title.toLowerCase();
       filteredContent = filteredContent.filter((item) => (item.title || '').toLowerCase().includes(titleLower));
     }
-    const totalItems = filteredContent.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-    const safePage = Math.min(currentPage, totalPages);
-    const startIndex = (safePage - 1) * PAGE_SIZE;
-    const paginatedContent = filteredContent.slice(startIndex, startIndex + PAGE_SIZE);
+    const needsManualPagination = !useFirestorePagination || hasTitleFilter;
+    let totalItems;
+    let totalPages;
+    let safePage;
+    let paginatedContent;
+    if (needsManualPagination) {
+      totalItems = filteredContent.length;
+      totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+      safePage = Math.min(currentPage, totalPages);
+      const startIndex = (safePage - 1) * PAGE_SIZE;
+      paginatedContent = filteredContent.slice(startIndex, startIndex + PAGE_SIZE);
+    } else {
+      totalItems = listResult.totalItems;
+      totalPages = listResult.totalPages;
+      safePage = listResult.currentPage;
+      paginatedContent = filteredContent;
+    }
     const buildFilterQuery = (pageNumber) =>
       buildQueryString({
         title: filters.title,
