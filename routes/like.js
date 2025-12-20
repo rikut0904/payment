@@ -126,6 +126,14 @@ function getTimestampDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function formatTimestampForDisplay(value) {
+  const date = getTimestampDate(value);
+  if (!date) {
+    return '';
+  }
+  return date.toLocaleString('ja-JP');
+}
+
 function shouldDisplayEntry(entry, nowMs, visibleDurationMs) {
   const createdAtDate = getTimestampDate(entry?.createdAt);
   if (!createdAtDate) {
@@ -444,11 +452,14 @@ router.get(
       return res.redirect('/like');
     }
     const redirectPath = resolveRedirectPath(req.query.redirect, '/like');
+    const detailEntry = Object.assign({}, entry, {
+      createdAt: formatTimestampForDisplay(entry.createdAt),
+    });
     res.render('like/detail', {
       title: 'おすすめの詳細',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,
-      entry,
+      entry: detailEntry,
       redirectPath,
     });
   })
