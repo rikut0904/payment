@@ -332,13 +332,11 @@ router.get(
     const sortOrder = normalizeSortOrder(req.query.order);
     const hasTitleFilter = Boolean(filters.title);
     const useFirestorePagination = shouldUseFirestorePagination(sortField, hasTitleFilter);
-    const visibleSince = new Date(Date.now() - LIKE_VISIBLE_DURATION_MS);
     const listResult = await listLikes({
       category: filters.category || undefined,
       userId: sessionUid,
       sortField,
       sortOrder,
-      visibleSince,
       page: currentPage,
       pageSize: PAGE_SIZE,
       paginate: useFirestorePagination,
