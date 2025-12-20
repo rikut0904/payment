@@ -13,10 +13,14 @@ var loginRouter = require('./routes/login');
 var signinRouter = require('./routes/signin');
 var cardRouter = require('./routes/card');
 var likeRouter = require('./routes/like');
+var imageProxyRouter = require('./routes/imageProxy');
 var { getUserProfile } = require('./lib/firestoreUsers');
-var SESSION_MAX_AGE_MS = 60 * 1000;
 var SESSION_COOKIE_NAME = 'payment_session';
 var SESSION_SECRET = process.env.SESSION_SECRET;
+var SESSION_TIME_MS = parseInt(process.env.SESSION_TIME_MS || '', 10);
+if (!Number.isFinite(SESSION_TIME_MS) || SESSION_TIME_MS <= 0) {
+  SESSION_TIME_MS = 60 * 1000;
+}
 var app = express();
 
 app.locals.firebaseConfig = {
@@ -27,6 +31,12 @@ app.locals.firebaseConfig = {
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID,
   measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+};
+app.locals.truncate = (text, length = 30, omission = '...') => {
+  if (!text) return '';
+  if (text.length <= length) return text;
+  const sliceLength = Math.max(0, length - omission.length);
+  return text.slice(0, sliceLength) + omission;
 };
 
 const admin = require('firebase-admin');
@@ -50,7 +60,7 @@ const requireAuth = (req, res, next) => {
   if (!user) return res.redirect('/');
   const loginAt = user.loginAt;
   // Destroy stale session and show timeout notice.
-  if (!loginAt || Date.now() - loginAt > SESSION_MAX_AGE_MS) {
+  if (!loginAt || Date.now() - loginAt > SESSION_TIME_MS) {
     req.clearSession();
     res.redirect('/login?timeout=1');
     return;
@@ -96,7 +106,7 @@ function setSession(res, data) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: SESSION_MAX_AGE_MS,
+    maxAge: SESSION_TIME_MS,
   });
 }
 
@@ -115,6 +125,11 @@ app.use((req, res, next) => {
     clearSession(res);
     req.session = null;
   };
+  next();
+});
+
+app.use((req, res, next) => {
+  res.locals.userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
@@ -156,6 +171,7 @@ app.use('/', indexRouter);
 app.use('/dashboard', requireAuth, dashboardRouter);
 app.use('/card', requireAuth, cardRouter);
 app.use('/like', requireAuth, likeRouter);
+app.use('/image-proxy', requireAuth, imageProxyRouter);
 app.use('/setting', requireAuth, settingRouter);
 app.use('/login', loginRouter);
 app.use('/signin', signinRouter);

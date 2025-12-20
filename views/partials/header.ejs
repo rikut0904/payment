@@ -1,15 +1,20 @@
-<header>
-  <h1><%= title %></h1>
-  <nav>
+<header class="app-header">
+  <div class="header-title">
+    <h1><%= title %></h1>
+  </div>
+  <nav class="header-nav">
     <ul>
       <li><a href="/dashboard">ダッシュボード</a></li>
       <li><a href="/card">支払情報管理</a></li>
-      <li><a href="/like">おすすめ</a></li>
+      <li><a href="/like">みんなのおすすめ</a></li>
+      <li><a href="/like/me">自分のおすすめ</a></li>
       <li><a href="/setting">設定</a></li>
     </ul>
   </nav>
-  <% if (userName) { %>
-    <p><%= userName %> さん</p>
-  <% } %>
-  <button id="logoutBtn" type="button">ログアウト</button>
+  <div class="header-actions">
+    <% if (userName) { %>
+      <span class="user-chip"><%= userName %> さん</span>
+    <% } %>
+    <button id="logoutBtn" type="button" class="logout-btn">ログアウト</button>
+  </div>
 </header>
