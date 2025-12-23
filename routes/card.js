@@ -4,6 +4,7 @@ var {
   createCard,
   listCardsByUser,
   getCardById,
+  updateCard,
   createSubscription,
   listSubscriptionsByUser,
 } = require('../lib/firestoreCards');
@@ -344,6 +345,18 @@ function renderAddCardPage(req, res, { errorMessage = '', formValues = {}, statu
   });
 }
 
+function renderEditCardPage(req, res, { errorMessage = '', formValues = {}, statusCode = 200 } = {}) {
+  res.status(statusCode).render('card/edit', {
+    title: 'カードを編集',
+    projectName: 'Payment',
+    firebaseConfig: req.app.locals.firebaseConfig,
+    cardBrands: SUPPORTED_CARD_BRANDS,
+    cardTypes: CARD_TYPE_OPTIONS,
+    formValues,
+    errorMessage,
+  });
+}
+
 function renderAddSubscriptionPage(
   req,
   res,
@@ -580,6 +593,146 @@ router.post(
       cardType,
     });
     setFlashMessage(res, 'success', 'カードを登録しました。');
+    res.redirect('/card');
+  })
+);
+
+router.get(
+  '/edit/:id',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const cardId = req.params.id;
+    const card = await getCardById(cardId);
+    if (!card || card.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたカードが存在しません。');
+      return res.redirect('/card');
+    }
+    renderEditCardPage(req, res, {
+      formValues: Object.assign({}, card, {
+        id: card.id,
+        billingDay: card.billingDay || '',
+        closingDay: card.closingDay || '',
+        paymentDay: card.paymentDay || '',
+        cardType: normalizeCardType(card.cardType),
+      }),
+    });
+  })
+);
+
+router.post(
+  '/edit/:id',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const cardId = req.params.id;
+    const existingCard = await getCardById(cardId);
+    if (!existingCard || existingCard.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたカードが存在しません。');
+      return res.redirect('/card');
+    }
+    const cardName = (req.body.cardName || '').trim();
+    const cardBrand = SUPPORTED_CARD_BRANDS.includes(req.body.cardBrand) ? req.body.cardBrand : 'その他';
+    const last4Digits = (req.body.last4Digits || '').trim();
+    let billingDay = parseBillingDay(req.body.billingDay);
+    let closingDay = parseBillingDay(req.body.closingDay);
+    let paymentDay = parseBillingDay(req.body.paymentDay);
+    const limitAmount = parseAmount(req.body.limitAmount);
+    const cardType = normalizeCardType(req.body.cardType);
+    const formValues = {
+      id: cardId,
+      cardName,
+      cardBrand,
+      last4Digits,
+      billingDay: req.body.billingDay,
+      closingDay: req.body.closingDay,
+      paymentDay: req.body.paymentDay,
+      limitAmount: req.body.limitAmount,
+      cardType,
+    };
+
+    if (!cardName) {
+      return renderEditCardPage(req, res, {
+        errorMessage: 'カード名を入力してください。',
+        formValues,
+        statusCode: 400,
+      });
+    }
+    if (last4Digits && !/^\d{4}$/.test(last4Digits)) {
+      return renderEditCardPage(req, res, {
+        errorMessage: 'カード番号下4桁は4桁の数字で入力してください。',
+        formValues,
+        statusCode: 400,
+      });
+    }
+    if (cardType === 'credit') {
+      billingDay = null;
+      if (!req.body.closingDay) {
+        return renderEditCardPage(req, res, {
+          errorMessage: 'クレジットカードの締め日を入力してください。',
+          formValues,
+          statusCode: 400,
+        });
+      }
+      if (closingDay === null) {
+        return renderEditCardPage(req, res, {
+          errorMessage: '締め日は1〜31の範囲で指定してください。',
+          formValues,
+          statusCode: 400,
+        });
+      }
+      if (!req.body.paymentDay) {
+        return renderEditCardPage(req, res, {
+          errorMessage: 'クレジットカードの支払日を入力してください。',
+          formValues,
+          statusCode: 400,
+        });
+      }
+      if (paymentDay === null) {
+        return renderEditCardPage(req, res, {
+          errorMessage: '支払日は1〜31の範囲で指定してください。',
+          formValues,
+          statusCode: 400,
+        });
+      }
+      formValues.billingDay = '';
+    } else {
+      closingDay = null;
+      paymentDay = null;
+      if (req.body.billingDay && billingDay === null) {
+        return renderEditCardPage(req, res, {
+          errorMessage: '課金日は1〜31の範囲で指定してください。',
+          formValues,
+          statusCode: 400,
+        });
+      }
+      formValues.closingDay = '';
+      formValues.paymentDay = '';
+    }
+    if (req.body.limitAmount && limitAmount === null) {
+      return renderEditCardPage(req, res, {
+        errorMessage: '利用上限額は数値で入力してください。',
+        formValues,
+        statusCode: 400,
+      });
+    }
+    await updateCard({
+      id: cardId,
+      userId: sessionUid,
+      cardName,
+      cardBrand,
+      last4Digits,
+      billingDay,
+      closingDay,
+      paymentDay,
+      limitAmount,
+      cardType,
+    });
+    setFlashMessage(res, 'success', 'カードを更新しました。');
     res.redirect('/card');
   })
 );
