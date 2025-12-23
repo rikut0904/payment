@@ -279,6 +279,34 @@ function summarizeMonthlyTotals(upcomingPayments, exchangeRates) {
   return Array.from(summaryMap.values()).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
 }
 
+function buildUpcomingPaymentMonths(payments, limit = UPCOMING_MONTHS) {
+  const today = startOfDay(new Date());
+  const months = [];
+  for (let i = 0; i < limit; i += 1) {
+    const base = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    const monthKey = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, '0')}`;
+    months.push({
+      monthKey,
+      monthLabel: `${base.getFullYear()}年${base.getMonth() + 1}月`,
+      creditPayments: [],
+      debitPayments: [],
+    });
+  }
+  const monthMap = new Map(months.map((month) => [month.monthKey, month]));
+  payments.forEach((payment) => {
+    const target = monthMap.get(payment.monthKey);
+    if (!target) {
+      return;
+    }
+    if (payment.cardType === 'debit') {
+      target.debitPayments.push(payment);
+    } else {
+      target.creditPayments.push(payment);
+    }
+  });
+  return months;
+}
+
 function groupSubscriptionsByCard(subscriptions) {
   const grouped = new Map();
   subscriptions.forEach((subscription) => {
@@ -456,9 +484,20 @@ router.get(
       })
     );
     const upcomingPayments = upcomingPaymentsRaw;
-    const monthlyTotals = summarizeMonthlyTotals(upcomingPayments, exchangeRates);
-    const upcomingPaymentsCredit = upcomingPayments.filter((item) => item.cardType === 'credit');
-    const upcomingPaymentsDebit = upcomingPayments.filter((item) => item.cardType === 'debit');
+    const monthlyTotalsRaw = summarizeMonthlyTotals(upcomingPayments, exchangeRates);
+    const upcomingPaymentMonths = buildUpcomingPaymentMonths(upcomingPayments);
+    const monthlyTotals = upcomingPaymentMonths.map((month) => {
+      const matched = monthlyTotalsRaw.find((item) => item.monthKey === month.monthKey);
+      if (matched) {
+        return matched;
+      }
+      return {
+        monthKey: month.monthKey,
+        monthLabel: month.monthLabel,
+        totalAmount: 0,
+        formattedTotal: formatCurrency(0, 'JPY'),
+      };
+    });
     const flashMessage = consumeFlashMessage(req, res);
     const noticeMessage = flashMessage?.type === 'success' ? flashMessage.message : '';
     const errorMessage = flashMessage?.type === 'error' ? flashMessage.message : '';
@@ -468,9 +507,7 @@ router.get(
       firebaseConfig: req.app.locals.firebaseConfig,
       cards: cardsWithSubscriptions,
       unlinkedSubscriptions,
-      upcomingPayments,
-      upcomingPaymentsCredit,
-      upcomingPaymentsDebit,
+      upcomingPaymentMonths,
       monthlyTotals,
       cardBrands: SUPPORTED_CARD_BRANDS,
       currencies: SUPPORTED_CURRENCIES,

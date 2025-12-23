@@ -205,82 +205,109 @@
                     <% }); %>
                 </div>
                 <% } %>
-                  <div class="card-panel__meta payment-groups">
-                    <div class="payment-group">
-                      <h4>クレジットカード</h4>
-                      <% if (upcomingPaymentsCredit && upcomingPaymentsCredit.length) { %>
-                        <div class="table-wrapper">
-                          <table class="table">
-                            <thead>
-                              <tr>
-                                <th>支払日</th>
-                                <th>サービス</th>
-                                <th>カード</th>
-                                <th>金額</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <% upcomingPaymentsCredit.forEach(function(payment) { %>
-                                <tr>
-                                  <td>
-                                    <%= payment.formattedDate %>
-                                  </td>
-                                  <td>
-                                    <%= payment.subscriptionName %>
-                                  </td>
-                                  <td>
-                                    <%= payment.cardName %>
-                                  </td>
-                                  <td>
-                                    <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
-                                  </td>
-                                </tr>
-                                <% }); %>
-                            </tbody>
-                          </table>
-                        </div>
-                        <% } else { %>
-                          <p class="muted">クレジットカードの支払い予定はありません。</p>
-                          <% } %>
+                  <% if (upcomingPaymentMonths && upcomingPaymentMonths.length) { %>
+                    <div class="payment-month-pagination">
+                      <button type="button" class="payment-month-pagination__btn" data-payment-prev aria-label="前の月" <%= upcomingPaymentMonths.length === 1 ? 'disabled' : '' %>>
+                        ‹
+                      </button>
+                      <div class="payment-month-tabs" data-payment-tabs>
+                        <% upcomingPaymentMonths.forEach(function(month, index) { %>
+                          <button
+                            type="button"
+                            class="payment-month-tab <%= index === 0 ? 'is-active' : '' %>"
+                            data-payment-index="<%= index %>"
+                            aria-pressed="<%= index === 0 ? 'true' : 'false' %>">
+                            <%= month.monthLabel %>
+                          </button>
+                        <% }); %>
+                      </div>
+                      <button type="button" class="payment-month-pagination__btn" data-payment-next aria-label="次の月" <%= upcomingPaymentMonths.length === 1 ? 'disabled' : '' %>>
+                        ›
+                      </button>
                     </div>
-                    <div class="payment-group">
-                      <h4>デビットカード</h4>
-                      <% if (upcomingPaymentsDebit && upcomingPaymentsDebit.length) { %>
-                        <div class="table-wrapper">
-                          <table class="table">
-                            <thead>
-                              <tr>
-                                <th>支払日</th>
-                                <th>サービス</th>
-                                <th>カード</th>
-                                <th>金額</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <% upcomingPaymentsDebit.forEach(function(payment) { %>
-                                <tr>
-                                  <td>
-                                    <%= payment.formattedDate %>
-                                  </td>
-                                  <td>
-                                    <%= payment.subscriptionName %>
-                                  </td>
-                                  <td>
-                                    <%= payment.cardName %>
-                                  </td>
-                                  <td>
-                                    <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
-                                  </td>
-                                </tr>
-                                <% }); %>
-                            </tbody>
-                          </table>
+                    <div class="payment-month-panels" data-payment-panels>
+                      <% upcomingPaymentMonths.forEach(function(month, index) { %>
+                        <div class="payment-month-panel <%= index === 0 ? 'is-active' : '' %>" data-payment-panel="<%= index %>" data-month-label="<%= month.monthLabel %>">
+                          <div class="card-panel__meta payment-groups">
+                            <details class="payment-group" open>
+                              <summary>
+                                <span>クレジットカード</span>
+                                <% if (month.creditPayments && month.creditPayments.length) { %>
+                                  <span class="payment-group__badge"><%= month.creditPayments.length %>件</span>
+                                <% } %>
+                              </summary>
+                              <div class="payment-group__body">
+                                <% if (month.creditPayments && month.creditPayments.length) { %>
+                                  <div class="table-wrapper">
+                                    <table class="table">
+                                      <thead>
+                                        <tr>
+                                          <th>支払日</th>
+                                          <th>サービス</th>
+                                          <th>カード</th>
+                                          <th>金額</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <% month.creditPayments.forEach(function(payment) { %>
+                                          <tr>
+                                            <td><%= payment.formattedDate %></td>
+                                            <td><%= payment.subscriptionName %></td>
+                                            <td><%= payment.cardName %></td>
+                                            <td><%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small></td>
+                                          </tr>
+                                        <% }); %>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                <% } else { %>
+                                  <p class="muted">この月のクレジットカードの支払い予定はありません。</p>
+                                <% } %>
+                              </div>
+                            </details>
+                            <details class="payment-group" open>
+                              <summary>
+                                <span>デビットカード</span>
+                                <% if (month.debitPayments && month.debitPayments.length) { %>
+                                  <span class="payment-group__badge"><%= month.debitPayments.length %>件</span>
+                                <% } %>
+                              </summary>
+                              <div class="payment-group__body">
+                                <% if (month.debitPayments && month.debitPayments.length) { %>
+                                  <div class="table-wrapper">
+                                    <table class="table">
+                                      <thead>
+                                        <tr>
+                                          <th>支払日</th>
+                                          <th>サービス</th>
+                                          <th>カード</th>
+                                          <th>金額</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <% month.debitPayments.forEach(function(payment) { %>
+                                          <tr>
+                                            <td><%= payment.formattedDate %></td>
+                                            <td><%= payment.subscriptionName %></td>
+                                            <td><%= payment.cardName %></td>
+                                            <td><%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small></td>
+                                          </tr>
+                                        <% }); %>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                <% } else { %>
+                                  <p class="muted">この月のデビットカードの支払い予定はありません。</p>
+                                <% } %>
+                              </div>
+                            </details>
+                          </div>
                         </div>
-                        <% } else { %>
-                          <p class="muted">デビットカードの支払い予定はありません。</p>
-                          <% } %>
+                      <% }); %>
                     </div>
-                  </div>
+                  <% } else { %>
+                    <p class="muted">今後3か月以内の支払い予定はありません。</p>
+                  <% } %>
             </section>
       </div>
       <footer>
