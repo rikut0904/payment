@@ -16,16 +16,20 @@
         <% if (errorMessage) { %>
           <div class="alert alert-error"><%= errorMessage %></div>
         <% } %>
-        <form class="form-grid" method="post" action="/card/add-subscription">
+        <form class="form-grid" method="post" action="/card/subscription" id="subscriptionForm">
           <div class="form-field form-field--wide">
             <label for="cardId">紐づけるカード <span class="required">*</span></label>
             <select id="cardId" name="cardId" required>
               <% (cards || []).forEach(function(card) { %>
-                <option value="<%= card.id %>" <%= (formValues.cardId || '') === card.id ? 'selected' : '' %>>
-                  <%= card.cardName %>（**** <%= card.last4Digits || '----' %>）
+                <option value="<%= card.id %>" data-card-type="<%= card.cardType %>" <%= (formValues.cardId || '') === card.id ? 'selected' : '' %>>
+                  <%= card.cardName %>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits || '----' %>）
                 </option>
               <% }); %>
             </select>
+          </div>
+          <div class="form-field">
+            <label for="paymentStartDate">支払い開始日 <span class="required">*</span></label>
+            <input type="date" id="paymentStartDate" name="paymentStartDate" value="<%= formValues.paymentStartDate || '' %>" required>
           </div>
           <div class="form-field">
             <label for="serviceName">サービス名 <span class="required">*</span></label>
@@ -33,7 +37,7 @@
           </div>
           <div class="form-field">
             <label for="amount">金額 <span class="required">*</span></label>
-            <input type="number" id="amount" name="amount" value="<%= formValues.amount || '' %>" min="0" step="100" placeholder="例: 1500" required>
+            <input type="number" id="amount" name="amount" value="<%= formValues.amount || '' %>" min="0" step="1" placeholder="例: 1500" required>
           </div>
           <div class="form-field">
             <label for="cycle">支払い頻度</label>
@@ -50,9 +54,9 @@
               <% }); %>
             </select>
           </div>
-          <div class="form-field">
+          <div class="form-field" data-billing-field>
             <label for="billingDay">課金日</label>
-            <input type="number" id="billingDay" name="billingDay" value="<%= formValues.billingDay || '' %>" min="1" max="31" placeholder="空欄でカード設定を使用">
+            <input type="number" id="billingDay" name="billingDay" value="<%= formValues.billingDay || '' %>" min="1" max="31" placeholder="デビットカードのみ指定可能">
           </div>
           <div class="form-field">
             <label for="registeredEmail">登録メールアドレス</label>
@@ -77,6 +81,25 @@
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+  <script>
+    const cardSelect = document.getElementById('cardId');
+    const billingField = document.querySelector('[data-billing-field]');
+    const billingInput = document.getElementById('billingDay');
+    function updateBillingField() {
+      const selectedOption = cardSelect.options[cardSelect.selectedIndex];
+      const type = selectedOption ? selectedOption.getAttribute('data-card-type') : 'credit';
+      const isDebit = type === 'debit';
+      billingField.style.display = isDebit ? '' : 'none';
+      billingInput.disabled = !isDebit;
+      if (!isDebit) {
+        billingInput.value = '';
+      }
+    }
+    if (cardSelect && billingField && billingInput) {
+      cardSelect.addEventListener('change', updateBillingField);
+      updateBillingField();
+    }
+  </script>
 </body>
 
 </html>

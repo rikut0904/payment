@@ -12,8 +12,7 @@
   <div class="layout">
     <%- include('../partials/header', { title }) %>
       <div class="content">
-        <section class="card">
-          <h2><%= title %></h2>
+        <section>
           <% if (typeof notice !=='undefined' && notice) { %>
             <div class="alert alert-success">
               <%= notice %>
@@ -39,34 +38,61 @@
                   <header class="card-panel__header">
                     <div>
                       <h4>
-                        <%= card.cardName %>
+                        <a href="/card/edit/<%= card.id %>">
+                          <%= card.cardName %>
+                            <span class="material-icons"></span>
+                        </a>
                       </h4>
                       <p class="card-panel__subtitle">
                         <span class="badge">
                           <%= card.cardBrand || 'その他' %>
                         </span>
+                        <span class="badge badge-outline">
+                          <%= card.cardTypeLabel || '' %>
+                        </span>
                         <span>末尾: **** <%= card.last4Digits || '----' %></span>
                       </p>
                     </div>
                     <dl class="card-panel__meta">
-                      <div>
-                        <dt>締め日</dt>
-                        <dd>
-                          <%= card.billingDayDisplay %>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>利用上限</dt>
-                        <dd>
-                          <%= card.limitAmountDisplay %>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>サブスク合計 (月)</dt>
-                        <dd>
-                          <%= card.formattedSubscriptionTotal %>
-                        </dd>
-                      </div>
+                      <% if (card.cardType==='credit' ) { %>
+                        <div>
+                          <dt>締め日</dt>
+                          <dd>
+                            <%= card.closingDayDisplay %>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>支払日</dt>
+                          <dd>
+                            <%= card.paymentDayDisplay %>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>利用上限</dt>
+                          <dd>
+                            <%= card.limitAmountDisplay %>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>サブスク合計</dt>
+                          <dd>
+                            <%= card.formattedSubscriptionTotal %>
+                              <% if (card.conversionWarning) { %>
+                                <small class="muted">※換算できない通貨を含みます</small>
+                                <% } %>
+                          </dd>
+                        </div>
+                        <% } else { %>
+                          <div>
+                            <dt>支払合計</dt>
+                            <dd>
+                              <%= card.formattedSubscriptionTotal %>
+                                <% if (card.conversionWarning) { %>
+                                  <small class="muted">※換算できない通貨を含みます</small>
+                                  <% } %>
+                            </dd>
+                          </div>
+                          <% } %>
                     </dl>
                   </header>
                   <details class="card-subscription-accordion" <%=card.subscriptions && card.subscriptions.length ? ''
@@ -90,7 +116,7 @@
                                 <th>金額</th>
                                 <th>サイクル</th>
                                 <th>登録メール</th>
-                                <th>課金日</th>
+                                <th>開始日</th>
                                 <th>備考</th>
                               </tr>
                             </thead>
@@ -110,7 +136,7 @@
                                     <%= sub.registeredEmail || '-' %>
                                   </td>
                                   <td>
-                                    <%= sub.billingDayDisplay %>
+                                    <%= sub.paymentStartDateDisplay %>
                                   </td>
                                   <td>
                                     <%= sub.notes || '-' %>
@@ -125,7 +151,7 @@
                           <% } %>
                     </div>
                     <div class="card-panel__body card-panel__actions">
-                      <a class="btn btn-outline" href="/card/add-subscription?cardId=<%= card.id %>">このカードにサブスクを追加</a>
+                      <a class="btn btn-outline" href="/card/subscription?cardId=<%= card.id %>">このカードにサブスクを追加</a>
                     </div>
                   </details>
                 </article>
@@ -142,9 +168,11 @@
             <p>カードが削除された、または未登録の状態で作成されたサブスクリプションが存在します。</p>
             <ul class="warning-list">
               <% unlinkedSubscriptions.forEach(function(sub) { %>
-                <li><strong>
+                <li>
+                  <strong>
                     <%= sub.serviceName %>
-                  </strong> - <%= sub.formattedAmount %> / 課金日: <%= sub.billingDayDisplay %>
+                  </strong>
+                  - <%= sub.formattedAmount %> / 開始日: <%= sub.paymentStartDateDisplay %>
                 </li>
                 <% }); %>
             </ul>
@@ -167,40 +195,82 @@
                     <% }); %>
                 </div>
                 <% } %>
-                  <% if (upcomingPayments && upcomingPayments.length) { %>
-                    <div class="table-wrapper">
-                      <table class="table">
-                        <thead>
-                          <tr>
-                            <th>支払日</th>
-                            <th>サービス</th>
-                            <th>カード</th>
-                            <th>金額</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <% upcomingPayments.forEach(function(payment) { %>
-                            <tr>
-                              <td>
-                                <%= payment.formattedDate %>
-                              </td>
-                              <td>
-                                <%= payment.subscriptionName %>
-                              </td>
-                              <td>
-                                <%= payment.cardName %>
-                              </td>
-                              <td>
-                                <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
-                              </td>
-                            </tr>
-                            <% }); %>
-                        </tbody>
-                      </table>
+                  <div class="card-panel__meta payment-groups">
+                    <div class="payment-group">
+                      <h4>クレジットカード</h4>
+                      <% if (upcomingPaymentsCredit && upcomingPaymentsCredit.length) { %>
+                        <div class="table-wrapper">
+                          <table class="table">
+                            <thead>
+                              <tr>
+                                <th>支払日</th>
+                                <th>サービス</th>
+                                <th>カード</th>
+                                <th>金額</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% upcomingPaymentsCredit.forEach(function(payment) { %>
+                                <tr>
+                                  <td>
+                                    <%= payment.formattedDate %>
+                                  </td>
+                                  <td>
+                                    <%= payment.subscriptionName %>
+                                  </td>
+                                  <td>
+                                    <%= payment.cardName %>
+                                  </td>
+                                  <td>
+                                    <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
+                                  </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                          </table>
+                        </div>
+                        <% } else { %>
+                          <p class="muted">クレジットカードの支払い予定はありません。</p>
+                          <% } %>
                     </div>
-                    <% } else { %>
-                      <p class="muted">今後の支払い予定はまだ登録されていません。</p>
-                      <% } %>
+                    <div class="payment-group">
+                      <h4>デビットカード</h4>
+                      <% if (upcomingPaymentsDebit && upcomingPaymentsDebit.length) { %>
+                        <div class="table-wrapper">
+                          <table class="table">
+                            <thead>
+                              <tr>
+                                <th>支払日</th>
+                                <th>サービス</th>
+                                <th>カード</th>
+                                <th>金額</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% upcomingPaymentsDebit.forEach(function(payment) { %>
+                                <tr>
+                                  <td>
+                                    <%= payment.formattedDate %>
+                                  </td>
+                                  <td>
+                                    <%= payment.subscriptionName %>
+                                  </td>
+                                  <td>
+                                    <%= payment.cardName %>
+                                  </td>
+                                  <td>
+                                    <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
+                                  </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                          </table>
+                        </div>
+                        <% } else { %>
+                          <p class="muted">デビットカードの支払い予定はありません。</p>
+                          <% } %>
+                    </div>
+                  </div>
             </section>
       </div>
       <footer>
@@ -209,6 +279,7 @@
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+  <script type="module" src="/javascripts/card-actions.js" defer></script>
 </body>
 
 </html>
