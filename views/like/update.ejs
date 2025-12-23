@@ -7,6 +7,7 @@
   </title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
     crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
@@ -21,27 +22,28 @@
             <input type="hidden" name="redirect" value="<%= redirectPath %>">
             <% if (returnToDetail) { %>
               <input type="hidden" name="returnToDetail" value="1">
-            <% } %>
-            <label for="title">商品名（必須）</label>
-            <input type="text" id="title" name="title" required value="<%= entry.title || '' %>">
-            <label for="contentText">商品概要（任意）</label>
-            <textarea id="contentText" name="contentText" placeholder="商品の特徴やメモなど"><%= entry.content || '' %></textarea>
-            <label for="category">カテゴリ（必須）</label>
-            <select id="category" name="category" required>
-              <option value="" disabled <%=entry.category ? '' : 'selected' %>>カテゴリを選択</option>
-              <% likeCategories.forEach(function(category) { %>
-                <option value="<%= category %>" <%=entry.category===category ? 'selected' : '' %>>
-                  <%= category %>
-                </option>
-                <% }) %>
-            </select>
-            <label for="date">私の購入日（必須）</label>
-            <input type="date" id="date" name="date" required value="<%= entry.date || '' %>">
-            <label for="url">購入先URL（任意）</label>
-            <input type="url" id="url" name="url" placeholder="https://example.com" value="<%= entry.url || '' %>">
-            <label for="image">商品画像（任意）</label>
-            <input type="url" id="image" name="image" value="<%= entry.image || '' %>">
-            <button type="submit">更新</button>
+              <% } %>
+                <label for="title">商品名（必須）</label>
+                <input type="text" id="title" name="title" required value="<%= entry.title || '' %>">
+                <label for="contentText">商品概要（任意）</label>
+                <textarea id="contentText" name="contentText"
+                  placeholder="商品の特徴やメモなど"><%= entry.content || '' %></textarea>
+                <label for="category">カテゴリ（必須）</label>
+                <select id="category" name="category" required>
+                  <option value="" disabled <%=entry.category ? '' : 'selected' %>>カテゴリを選択</option>
+                  <% likeCategories.forEach(function(category) { %>
+                    <option value="<%= category %>" <%=entry.category===category ? 'selected' : '' %>>
+                      <%= category %>
+                    </option>
+                    <% }) %>
+                </select>
+                <label for="date">私の購入日（必須）</label>
+                <input type="date" id="date" name="date" required value="<%= entry.date || '' %>">
+                <label for="url">購入先URL（任意）</label>
+                <input type="url" id="url" name="url" placeholder="https://example.com" value="<%= entry.url || '' %>">
+                <label for="image">商品画像（任意）</label>
+                <input type="url" id="image" name="image" value="<%= entry.image || '' %>">
+                <button type="submit">更新</button>
           </form>
         </section>
       </div>

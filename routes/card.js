@@ -5,6 +5,7 @@ var {
   listCardsByUser,
   getCardById,
   updateCard,
+  deleteCard,
   createSubscription,
   listSubscriptionsByUser,
 } = require('../lib/firestoreCards');
@@ -733,6 +734,25 @@ router.post(
       cardType,
     });
     setFlashMessage(res, 'success', 'カードを更新しました。');
+    res.redirect('/card');
+  })
+);
+
+router.post(
+  '/delete/:id',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const cardId = req.params.id;
+    try {
+      await deleteCard(cardId, sessionUid);
+      setFlashMessage(res, 'success', 'カードを削除しました。');
+    } catch (err) {
+      console.error('Failed to delete card', err);
+      setFlashMessage(res, 'error', 'カードの削除に失敗しました。');
+    }
     res.redirect('/card');
   })
 );

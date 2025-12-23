@@ -5,6 +5,9 @@
   <title>
     <%= title %>
   </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
@@ -36,13 +39,23 @@
               <% cards.forEach(function(card) { %>
                 <article class="card-panel">
                   <header class="card-panel__header">
-                    <div>
-                      <h4>
-                        <a href="/card/edit/<%= card.id %>">
+                    <div class="card-panel__title-block">
+                      <div class="card-panel__title-row">
+                        <h4>
                           <%= card.cardName %>
-                            <span class="material-icons"></span>
-                        </a>
-                      </h4>
+                        </h4>
+                        <details class="card-menu">
+                          <summary><span class="material-icons">more_vert</span></summary>
+                          <div class="card-menu__list">
+                            <a class="card-menu__item" href="/card/subscription?cardId=<%= card.id %>">このカードにサブスクを追加</a>
+                            <a class="card-menu__item" href="/card/edit/<%= card.id %>">カードを編集</a>
+                            <form method="post" action="/card/delete/<%= card.id %>"
+                              onsubmit="return confirm('このカードを削除しますか？紐づくサブスクは残ります。');">
+                              <button type="submit" class="card-menu__item card-menu__item--danger">カードを削除</button>
+                            </form>
+                          </div>
+                        </details>
+                      </div>
                       <p class="card-panel__subtitle">
                         <span class="badge">
                           <%= card.cardBrand || 'その他' %>
@@ -149,9 +162,6 @@
                         <% } else { %>
                           <p class="muted">このカードに紐づくサブスクリプションはまだありません。</p>
                           <% } %>
-                    </div>
-                    <div class="card-panel__body card-panel__actions">
-                      <a class="btn btn-outline" href="/card/subscription?cardId=<%= card.id %>">このカードにサブスクを追加</a>
                     </div>
                   </details>
                 </article>

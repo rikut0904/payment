@@ -19,7 +19,7 @@
           <h2>
             <%= title %>
           </h2>
-          <details class="filter-accordion" <%= showFilterOpen ? 'open' : '' %>>
+          <details class="filter-accordion" <%=showFilterOpen ? 'open' : '' %>>
             <summary>ソート・フィルタ条件</summary>
             <div class="filter-bar">
               <form class="filter-form" method="get" action="/like/me">
@@ -97,11 +97,13 @@
                       <%= item.date || '' %>
                     </td>
                     <td class="actions-cell">
-                      <details>
+                      <details class="card-menu">
                         <summary><span class="material-icons">more_vert</span></summary>
-                        <div class="actions-menu">
-                          <a href="/like/update/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>" class="edit-link">編集</a>
-                          <a href="#" class="delete-link" data-id="<%= item.id %>">削除</a>
+                        <div class="card-menu__list">
+                          <a href="/like/update/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>"
+                            class="card-menu__item edit-link">編集</a>
+                          <a href="#" class="card-menu__item card-menu__item--danger delete-link"
+                            data-id="<%= item.id %>">削除</a>
                         </div>
                       </details>
                     </td>
@@ -109,44 +111,52 @@
                   <% }) %>
               </tbody>
             </table>
-            <% if (pagination && pagination.totalPages > 1) { %>
+            <% if (pagination && pagination.totalPages> 1) { %>
               <nav class="pagination-bar" aria-label="自分のおすすめ一覧ページネーション">
                 <div class="pagination-summary">
                   <span class="pagination-total">全<%= pagination.totalItems %>件</span>
-                  <span class="pagination-current"><%= pagination.currentPage %>/<%= pagination.totalPages %>ページ</span>
+                  <span class="pagination-current">
+                    <%= pagination.currentPage %>/<%= pagination.totalPages %>ページ
+                  </span>
                 </div>
                 <div class="pagination-links" role="list">
                   <% if (pagination.hasPrev) { %>
                     <a href="/like/me?<%- pagination.prevQuery %>" class="pagination-link arrow" aria-label="前のページ">
                       ‹
                     </a>
-                  <% } else { %>
-                    <span class="pagination-link arrow disabled" aria-hidden="true">‹</span>
-                  <% } %>
-                  <% pagination.pages.forEach(function(page) { %>
-                    <% if (page.isCurrent) { %>
-                      <span class="pagination-link current" aria-current="page"><%= page.number %></span>
                     <% } else { %>
-                      <a href="/like/me?<%- page.query %>" class="pagination-link"><%= page.number %></a>
-                    <% } %>
-                  <% }); %>
-                  <% if (pagination.hasNext) { %>
-                    <a href="/like/me?<%- pagination.nextQuery %>" class="pagination-link arrow" aria-label="次のページ">
-                      ›
-                    </a>
-                  <% } else { %>
-                    <span class="pagination-link arrow disabled" aria-hidden="true">›</span>
-                  <% } %>
+                      <span class="pagination-link arrow disabled" aria-hidden="true">‹</span>
+                      <% } %>
+                        <% pagination.pages.forEach(function(page) { %>
+                          <% if (page.isCurrent) { %>
+                            <span class="pagination-link current" aria-current="page">
+                              <%= page.number %>
+                            </span>
+                            <% } else { %>
+                              <a href="/like/me?<%- page.query %>" class="pagination-link">
+                                <%= page.number %>
+                              </a>
+                              <% } %>
+                                <% }); %>
+                                  <% if (pagination.hasNext) { %>
+                                    <a href="/like/me?<%- pagination.nextQuery %>" class="pagination-link arrow"
+                                      aria-label="次のページ">
+                                      ›
+                                    </a>
+                                    <% } else { %>
+                                      <span class="pagination-link arrow disabled" aria-hidden="true">›</span>
+                                      <% } %>
                 </div>
               </nav>
-            <% } %>
-            <% } else { %>
-              <div class="text-center">
-                <h2>まだおすすめを追加していません</h2>
-                <p>「おすすめを追加」から最初の1件を登録しましょう。</p>
-              </div>
               <% } %>
-              <a href="/like/add?redirect=<%= encodeURIComponent(currentListUrl) %>" class="btn btn-primary pagination-add-action">おすすめを追加</a>
+                <% } else { %>
+                  <div class="text-center">
+                    <h2>まだおすすめを追加していません</h2>
+                    <p>「おすすめを追加」から最初の1件を登録しましょう。</p>
+                  </div>
+                  <% } %>
+                    <a href="/like/add?redirect=<%= encodeURIComponent(currentListUrl) %>"
+                      class="btn btn-primary pagination-add-action">おすすめを追加</a>
         </section>
       </div>
       <footer>
