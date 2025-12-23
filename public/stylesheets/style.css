@@ -223,6 +223,12 @@ ul {
   box-shadow: 0 16px 28px rgba(var(--accent-rgb), 0.3);
 }
 
+.btn.btn-small {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  box-shadow: none;
+}
+
 .pagination-add-action {
   display: inline-flex;
   margin-top: 16px;
@@ -834,6 +840,17 @@ footer {
   font-weight: 600;
 }
 
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.table-actions form {
+  margin: 0;
+}
+
 .muted {
   color: var(--text-sub);
   font-style: italic;
@@ -871,6 +888,62 @@ footer {
 .summary-value {
   font-size: 18px;
   font-weight: 700;
+}
+
+.card-detail__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.card-detail__amount {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.detail-list div {
+  background: rgba(var(--accent-rgb), 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+
+.detail-list dt {
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+
+.detail-list dd {
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
+.detail-notes {
+  grid-column: 1 / -1;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.detail-actions form {
+  margin: 0;
 }
 
 .payment-month-pagination {

@@ -16,14 +16,17 @@
     <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
-          <h2>サブスクリプションを追加</h2>
-          <p>選択したカードに紐づけて支払いサイクルを管理しましょう。</p>
+          <h2><%= formTitle || 'サブスクリプションを追加' %></h2>
+          <p><%= formDescription || '選択したカードに紐づけて支払いサイクルを管理しましょう。' %></p>
           <% if (errorMessage) { %>
             <div class="alert alert-error">
               <%= errorMessage %>
             </div>
             <% } %>
-              <form class="form-grid" method="post" action="/card/subscription" id="subscriptionForm">
+              <form class="form-grid" method="post" action="<%= formAction || '/card/subscription' %>" id="subscriptionForm">
+                <% if (redirectPath) { %>
+                  <input type="hidden" name="redirect" value="<%= redirectPath %>">
+                <% } %>
                 <div class="form-field form-field--wide">
                   <label for="cardId">紐づけるカード <span class="required">*</span></label>
                   <select id="cardId" name="cardId" required>
@@ -85,11 +88,11 @@
                     placeholder="用途や契約プランなど"><%= formValues.notes || '' %></textarea>
                 </div>
                 <div class="form-actions">
-                  <button type="submit">サブスクを登録</button>
+                  <button type="submit"><%= submitLabel || 'サブスクを登録' %></button>
                 </div>
               </form>
               <div class="actions" style="margin-top: 24px;">
-                <a href="/card" class="btn btn-outline">一覧に戻る</a>
+                <a href="<%= cancelUrl || '/card' %>" class="btn btn-outline">一覧に戻る</a>
               </div>
         </section>
       </div>

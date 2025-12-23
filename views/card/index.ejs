@@ -128,16 +128,16 @@
                                 <th>サービス名</th>
                                 <th>金額</th>
                                 <th>サイクル</th>
-                                <th>登録メール</th>
-                                <th>開始日</th>
-                                <th>備考</th>
+                                <th>操作</th>
                               </tr>
                             </thead>
                             <tbody>
                               <% card.subscriptions.forEach(function(sub) { %>
                                 <tr>
                                   <td>
-                                    <%= sub.serviceName %>
+                                    <a href="/card/subscription/<%= sub.id %>" class="link">
+                                      <%= sub.serviceName %>
+                                    </a>
                                   </td>
                                   <td>
                                     <%= sub.formattedAmount %>
@@ -146,13 +146,12 @@
                                     <%= sub.cycleLabel %>
                                   </td>
                                   <td>
-                                    <%= sub.registeredEmail || '-' %>
-                                  </td>
-                                  <td>
-                                    <%= sub.paymentStartDateDisplay %>
-                                  </td>
-                                  <td>
-                                    <%= sub.notes || '-' %>
+                                    <div class="table-actions">
+                                      <a href="/card/subscription/<%= sub.id %>/edit?redirect=<%= encodeURIComponent('/card') %>" class="btn btn-outline btn-small">編集</a>
+                                      <form method="post" action="/card/subscription/<%= sub.id %>/delete" onsubmit="return confirm('このサブスクリプションを削除しますか？');">
+                                        <button type="submit" class="btn btn-danger btn-small">削除</button>
+                                      </form>
+                                    </div>
                                   </td>
                                 </tr>
                                 <% }); %>

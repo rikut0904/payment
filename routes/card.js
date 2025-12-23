@@ -8,6 +8,9 @@ var {
   deleteCard,
   createSubscription,
   listSubscriptionsByUser,
+  getSubscriptionById,
+  updateSubscription,
+  deleteSubscription,
 } = require('../lib/firestoreCards');
 var { getExchangeRates, convertToJpy } = require('../lib/exchangeRates');
 
@@ -362,6 +365,16 @@ function consumeFlashMessage(req, res) {
   return data;
 }
 
+function resolveRedirect(target, fallback) {
+  if (typeof target !== 'string') {
+    return fallback;
+  }
+  if (!target.startsWith('/') || target.startsWith('//')) {
+    return fallback;
+  }
+  return target;
+}
+
 function renderAddCardPage(req, res, { errorMessage = '', formValues = {}, statusCode = 200 } = {}) {
   res.status(statusCode).render('card/add', {
     title: 'カードを登録',
@@ -386,20 +399,52 @@ function renderEditCardPage(req, res, { errorMessage = '', formValues = {}, stat
   });
 }
 
-function renderAddSubscriptionPage(
+function renderSubscriptionFormPage(
   req,
   res,
-  { cards = [], errorMessage = '', formValues = {}, statusCode = 200 } = {}
+  {
+    cards = [],
+    errorMessage = '',
+    formValues = {},
+    statusCode = 200,
+    isEdit = false,
+    formAction = '/card/subscription',
+    formTitle,
+    formDescription,
+    submitLabel,
+    cancelUrl = '/card',
+    redirectPath = '',
+  } = {}
 ) {
+  const heading = formTitle || (isEdit ? 'サブスクリプションを編集' : 'サブスクリプションを追加');
+  const description =
+    formDescription ||
+    (isEdit ? '契約情報を更新してください。' : '選択したカードに紐づけて支払いサイクルを管理しましょう。');
   res.status(statusCode).render('card/subscription', {
-    title: 'サブスクリプションを追加',
+    title: heading,
     projectName: 'Payment',
     firebaseConfig: req.app.locals.firebaseConfig,
     cards,
     currencies: SUPPORTED_CURRENCIES,
     errorMessage,
     formValues,
+    formTitle: heading,
+    formDescription: description,
+    submitLabel: submitLabel || (isEdit ? '内容を更新' : 'サブスクを登録'),
+    formAction,
+    cancelUrl,
+    redirectPath,
   });
+}
+
+async function fetchUserCardsWithMeta(userId) {
+  const cards = await listCardsByUser(userId);
+  return cards.map((card) =>
+    Object.assign({}, card, {
+      cardType: normalizeCardType(card.cardType),
+      cardTypeLabel: CARD_TYPE_LABELS[normalizeCardType(card.cardType)] || 'クレジットカード',
+    })
+  );
 }
 
 router.get(
@@ -801,12 +846,7 @@ router.get(
     if (!sessionUid) {
       return res.redirect('/login');
     }
-    const cards = (await listCardsByUser(sessionUid)).map((card) =>
-      Object.assign({}, card, {
-        cardType: normalizeCardType(card.cardType),
-        cardTypeLabel: CARD_TYPE_LABELS[normalizeCardType(card.cardType)] || 'クレジットカード',
-      })
-    );
+    const cards = await fetchUserCardsWithMeta(sessionUid);
     if (!cards.length) {
       setFlashMessage(res, 'error', 'サブスクリプションを追加するには先にカードを登録してください。');
       return res.redirect('/card');
@@ -817,7 +857,12 @@ router.get(
       cycle: 'monthly',
       paymentStartDate: formatIsoDate(new Date()),
     };
-    renderAddSubscriptionPage(req, res, {
+    const redirectRaw = typeof req.query.redirect === 'string' ? req.query.redirect : '';
+    const safeRedirect = resolveRedirect(redirectRaw, '');
+    const editActionBase = `/card/subscription/${subscription.id}/edit`;
+    const formAction = safeRedirect ? `${editActionBase}?redirect=${encodeURIComponent(safeRedirect)}` : editActionBase;
+    const cancelUrl = safeRedirect || `/card/subscription/${subscription.id}`;
+    renderSubscriptionFormPage(req, res, {
       cards,
       formValues: defaultValues,
     });
@@ -840,12 +885,7 @@ router.post(
     const registeredEmail = (req.body.registeredEmail || '').trim();
     const paymentStartDate = parseDateInput(req.body.paymentStartDate);
     const notes = (req.body.notes || '').trim();
-    const cards = (await listCardsByUser(sessionUid)).map((card) =>
-      Object.assign({}, card, {
-        cardType: normalizeCardType(card.cardType),
-        cardTypeLabel: CARD_TYPE_LABELS[normalizeCardType(card.cardType)] || 'クレジットカード',
-      })
-    );
+    const cards = await fetchUserCardsWithMeta(sessionUid);
     const formValues = {
       cardId,
       serviceName,
@@ -864,7 +904,7 @@ router.post(
     }
 
     if (!cardId) {
-      return renderAddSubscriptionPage(req, res, {
+      return renderSubscriptionFormPage(req, res, {
         cards,
         errorMessage: 'サブスクリプションを紐付けるカードを選択してください。',
         formValues,
@@ -873,7 +913,7 @@ router.post(
     }
     const card = cards.find((item) => item.id === cardId) || (await getCardById(cardId));
     if (!card || card.userId !== sessionUid) {
-      return renderAddSubscriptionPage(req, res, {
+      return renderSubscriptionFormPage(req, res, {
         cards,
         errorMessage: '指定されたカードが存在しません。',
         formValues,
@@ -881,7 +921,7 @@ router.post(
       });
     }
     if (!serviceName) {
-      return renderAddSubscriptionPage(req, res, {
+      return renderSubscriptionFormPage(req, res, {
         cards,
         errorMessage: 'サブスクリプション名を入力してください。',
         formValues,
@@ -889,7 +929,7 @@ router.post(
       });
     }
     if (amount === null || amount <= 0) {
-      return renderAddSubscriptionPage(req, res, {
+      return renderSubscriptionFormPage(req, res, {
         cards,
         errorMessage: '支払額は0より大きい数値で入力してください。',
         formValues,
@@ -901,7 +941,7 @@ router.post(
       billingDay = null;
       formValues.billingDay = '';
     } else if (req.body.billingDay && billingDay === null) {
-      return renderAddSubscriptionPage(req, res, {
+      return renderSubscriptionFormPage(req, res, {
         cards,
         errorMessage: '課金日は1〜31の範囲で指定してください。',
         formValues,
@@ -909,7 +949,7 @@ router.post(
       });
     }
     if (!paymentStartDate) {
-      return renderAddSubscriptionPage(req, res, {
+      return renderSubscriptionFormPage(req, res, {
         cards,
         errorMessage: '支払い開始日を入力してください。',
         formValues,
@@ -929,6 +969,210 @@ router.post(
       notes,
     });
     setFlashMessage(res, 'success', 'サブスクリプションを追加しました。');
+    res.redirect('/card');
+  })
+);
+
+router.get(
+  '/subscription/:id',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const subscriptionId = req.params.id;
+    const subscription = await getSubscriptionById(subscriptionId);
+    if (!subscription || subscription.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたサブスクリプションが存在しません。');
+      return res.redirect('/card');
+    }
+    const card = subscription.cardId ? await getCardById(subscription.cardId) : null;
+    const normalizedCard = card
+      ? {
+          id: card.id,
+          cardName: card.cardName,
+          cardTypeLabel: CARD_TYPE_LABELS[normalizeCardType(card.cardType)] || 'クレジットカード',
+          last4Digits: card.last4Digits || '----',
+        }
+      : null;
+    const startDate = parseDateInput(subscription.paymentStartDate);
+    const detail = {
+      id: subscription.id,
+      serviceName: subscription.serviceName,
+      amount: Number(subscription.amount) || 0,
+      formattedAmount: formatCurrency(Number(subscription.amount) || 0, subscription.currency || 'JPY'),
+      currency: (subscription.currency || 'JPY').toUpperCase(),
+      cycleLabel: subscription.cycle === 'yearly' ? '年額' : '月額',
+      billingDayDisplay: formatDayDisplay(subscription.billingDay),
+      registeredEmail: subscription.registeredEmail || '',
+      paymentStartDateDisplay: startDate ? formatDateForDisplay(startDate) : '未設定',
+      notes: subscription.notes || '',
+    };
+    res.render('card/subscription-detail', {
+      title: 'サブスクリプション詳細',
+      projectName: 'Payment',
+      firebaseConfig: req.app.locals.firebaseConfig,
+      subscription: detail,
+      card: normalizedCard,
+    });
+  })
+);
+
+router.get(
+  '/subscription/:id/edit',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const subscriptionId = req.params.id;
+    const subscription = await getSubscriptionById(subscriptionId);
+    if (!subscription || subscription.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたサブスクリプションが存在しません。');
+      return res.redirect('/card');
+    }
+    const cards = await fetchUserCardsWithMeta(sessionUid);
+    if (!cards.length) {
+      setFlashMessage(res, 'error', 'サブスクリプションを編集するにはカードが必要です。');
+      return res.redirect('/card');
+    }
+    const redirectRaw = typeof req.query.redirect === 'string' ? req.query.redirect : '';
+    const safeRedirect = resolveRedirect(redirectRaw, `/card/subscription/${subscription.id}`);
+    const formAction = `/card/subscription/${subscription.id}/edit`;
+    const cancelUrl = safeRedirect || `/card/subscription/${subscription.id}`;
+    const formValues = {
+      cardId: subscription.cardId,
+      serviceName: subscription.serviceName,
+      amount: subscription.amount,
+      billingDay: subscription.billingDay || '',
+      currency: (subscription.currency || 'JPY').toUpperCase(),
+      cycle: subscription.cycle || 'monthly',
+      registeredEmail: subscription.registeredEmail || '',
+      paymentStartDate: formatIsoDate(subscription.paymentStartDate),
+      notes: subscription.notes || '',
+    };
+    renderSubscriptionFormPage(req, res, {
+      cards,
+      formValues,
+      isEdit: true,
+      formAction,
+      cancelUrl,
+      redirectPath: safeRedirect,
+    });
+  })
+);
+
+router.post(
+  '/subscription/:id/edit',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const subscriptionId = req.params.id;
+    const existingSubscription = await getSubscriptionById(subscriptionId);
+    if (!existingSubscription || existingSubscription.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたサブスクリプションが存在しません。');
+      return res.redirect('/card');
+    }
+    const cards = await fetchUserCardsWithMeta(sessionUid);
+    if (!cards.length) {
+      setFlashMessage(res, 'error', 'カードが登録されていません。');
+      return res.redirect('/card');
+    }
+    const redirectRawQuery = typeof req.query.redirect === 'string' ? req.query.redirect : '';
+    const redirectRawBody = typeof req.body.redirect === 'string' ? req.body.redirect : '';
+    const safeRedirect = resolveRedirect(redirectRawBody || redirectRawQuery, `/card/subscription/${subscriptionId}`);
+    const formAction = `/card/subscription/${subscriptionId}/edit`;
+    const cancelUrl = safeRedirect || `/card/subscription/${subscriptionId}`;
+    const successRedirect = safeRedirect || `/card/subscription/${subscriptionId}`;
+    const cardId = (req.body.cardId || '').trim();
+    const serviceName = (req.body.serviceName || '').trim();
+    const amount = parseAmount(req.body.amount);
+    let billingDay = parseBillingDay(req.body.billingDay);
+    const currency = normalizeCurrency(req.body.currency);
+    const cycle = req.body.cycle === 'yearly' ? 'yearly' : 'monthly';
+    const registeredEmail = (req.body.registeredEmail || '').trim();
+    const paymentStartDate = parseDateInput(req.body.paymentStartDate);
+    const notes = (req.body.notes || '').trim();
+    const formValues = {
+      cardId,
+      serviceName,
+      amount: req.body.amount,
+      billingDay: req.body.billingDay,
+      currency,
+      cycle,
+      registeredEmail,
+      paymentStartDate: req.body.paymentStartDate,
+      notes,
+    };
+    const renderError = (message) =>
+      renderSubscriptionFormPage(req, res, {
+        cards,
+        errorMessage: message,
+        formValues,
+        statusCode: 400,
+        isEdit: true,
+        formAction,
+        cancelUrl,
+        redirectPath: safeRedirect,
+      });
+    if (!cardId) {
+      return renderError('サブスクリプションを紐付けるカードを選択してください。');
+    }
+    const card = cards.find((item) => item.id === cardId) || (await getCardById(cardId));
+    if (!card || card.userId !== sessionUid) {
+      return renderError('指定されたカードが存在しません。');
+    }
+    if (!serviceName) {
+      return renderError('サブスクリプション名を入力してください。');
+    }
+    if (amount === null || amount <= 0) {
+      return renderError('支払額は0より大きい数値で入力してください。');
+    }
+    const cardType = normalizeCardType(card.cardType);
+    if (cardType !== 'debit') {
+      billingDay = null;
+      formValues.billingDay = '';
+    } else if (req.body.billingDay && billingDay === null) {
+      return renderError('課金日は1〜31の範囲で指定してください。');
+    }
+    if (!paymentStartDate) {
+      return renderError('支払い開始日を入力してください。');
+    }
+    await updateSubscription({
+      id: subscriptionId,
+      userId: sessionUid,
+      cardId,
+      serviceName,
+      amount,
+      billingDay,
+      currency,
+      cycle,
+      registeredEmail,
+      paymentStartDate,
+      notes,
+    });
+    setFlashMessage(res, 'success', 'サブスクリプションを更新しました。');
+    res.redirect(successRedirect);
+  })
+);
+
+router.post(
+  '/subscription/:id/delete',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const subscriptionId = req.params.id;
+    try {
+      await deleteSubscription(subscriptionId, sessionUid);
+      setFlashMessage(res, 'success', 'サブスクリプションを削除しました。');
+    } catch (err) {
+      console.error('Failed to delete subscription', err);
+      setFlashMessage(res, 'error', 'サブスクリプションの削除に失敗しました。');
+    }
     res.redirect('/card');
   })
 );
