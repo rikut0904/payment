@@ -1159,6 +1159,61 @@ router.post(
 );
 
 router.post(
+  '/subscription/:id/relink',
+  asyncHandler(async function (req, res) {
+    const sessionUid = req.session?.user?.uid;
+    if (!sessionUid) {
+      return res.redirect('/login');
+    }
+    const subscriptionId = req.params.id;
+    const redirectTarget = resolveRedirect(req.body.redirect, '/card');
+    const cardId = (req.body.cardId || '').trim();
+    if (!cardId) {
+      setFlashMessage(res, 'error', '紐づけ先のカードを選択してください。');
+      return res.redirect(redirectTarget);
+    }
+    const subscription = await getSubscriptionById(subscriptionId);
+    if (!subscription || subscription.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたサブスクリプションが存在しません。');
+      return res.redirect('/card');
+    }
+    const card = await getCardById(cardId);
+    if (!card || card.userId !== sessionUid) {
+      setFlashMessage(res, 'error', '指定されたカードが存在しません。');
+      return res.redirect(redirectTarget);
+    }
+    const cardType = normalizeCardType(card.cardType);
+    let billingDay = subscription.billingDay || null;
+    if (cardType !== 'debit') {
+      billingDay = null;
+    } else if (billingDay !== null && billingDay !== undefined) {
+      const parsed = parseBillingDay(billingDay);
+      billingDay = parsed === null ? null : parsed;
+    }
+    try {
+      await updateSubscription({
+        id: subscriptionId,
+        userId: sessionUid,
+        cardId,
+        serviceName: subscription.serviceName,
+        amount: subscription.amount,
+        billingDay,
+        currency: subscription.currency,
+        cycle: subscription.cycle,
+        registeredEmail: subscription.registeredEmail,
+        paymentStartDate: subscription.paymentStartDate,
+        notes: subscription.notes,
+      });
+      setFlashMessage(res, 'success', 'サブスクリプションを紐づけました。');
+    } catch (err) {
+      console.error('Failed to relink subscription', err);
+      setFlashMessage(res, 'error', 'サブスクリプションの紐づけに失敗しました。');
+    }
+    res.redirect(redirectTarget);
+  })
+);
+
+router.post(
   '/subscription/:id/delete',
   asyncHandler(async function (req, res) {
     const sessionUid = req.session?.user?.uid;

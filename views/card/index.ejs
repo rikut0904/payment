@@ -147,8 +147,10 @@
                                   </td>
                                   <td>
                                     <div class="table-actions">
-                                      <a href="/card/subscription/<%= sub.id %>/edit?redirect=<%= encodeURIComponent('/card') %>" class="btn btn-outline btn-small">編集</a>
-                                      <form method="post" action="/card/subscription/<%= sub.id %>/delete" onsubmit="return confirm('このサブスクリプションを削除しますか？');">
+                                      <a href="/card/subscription/<%= sub.id %>/edit?redirect=<%= encodeURIComponent('/card') %>"
+                                        class="btn btn-outline btn-small">編集</a>
+                                      <form method="post" action="/card/subscription/<%= sub.id %>/delete"
+                                        onsubmit="return confirm('このサブスクリプションを削除しますか？');">
                                         <button type="submit" class="btn btn-danger btn-small">削除</button>
                                       </form>
                                     </div>
@@ -174,14 +176,37 @@
         <% if (unlinkedSubscriptions && unlinkedSubscriptions.length) { %>
           <section class="card warning">
             <h3>カード未紐付けのサブスクリプション</h3>
-            <p>カードが削除された、または未登録の状態で作成されたサブスクリプションが存在します。</p>
-            <ul class="warning-list">
+            <p>カードが削除された、または未登録の状態で作成されたサブスクリプションが存在します。カードを選択して再紐づけしてください。</p>
+            <ul class="warning-list warning-list--interactive">
               <% unlinkedSubscriptions.forEach(function(sub) { %>
-                <li>
-                  <strong>
-                    <%= sub.serviceName %>
-                  </strong>
-                  - <%= sub.formattedAmount %> / 開始日: <%= sub.paymentStartDateDisplay %>
+                <li class="warning-list__item">
+                  <div class="warning-list__info">
+                    <strong>
+                      <%= sub.serviceName %>
+                    </strong> - <%= sub.formattedAmount %> / 開始日: <%= sub.paymentStartDateDisplay %>
+                  </div>
+                  <% if (cards && cards.length) { %>
+                    <form class="warning-list__form" method="post" action="/card/subscription/<%= sub.id %>/relink">
+                      <label class="visually-hidden" for="relink-card-<%= sub.id %>">紐づけ先カード</label>
+                      <input type="hidden" name="redirect" value="/card">
+                      <div class="warning-list__control">
+                        <select id="relink-card-<%= sub.id %>" name="cardId" required>
+                          <option value="">カードを選択</option>
+                          <% cards.forEach(function(card) { %>
+                            <option value="<%= card.id %>">
+                              <%= card.cardName %>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits || '----' %>）
+                            </option>
+                          <% }); %>
+                        </select>
+                        <div class="warning-list__actions">
+                          <button type="submit" class="btn btn-small btn-solid">紐づけ</button>
+                          <button type="submit" formaction="/card/subscription/<%= sub.id %>/delete" class="btn btn-small btn-danger" onclick="return confirm('このサブスクリプションを削除しますか？');">削除</button>
+                        </div>
+                      </div>
+                    </form>
+                    <% } else { %>
+                      <p class="muted">紐づけ可能なカードがありません。先にカードを登録してください。</p>
+                      <% } %>
                 </li>
                 <% }); %>
             </ul>
@@ -206,34 +231,36 @@
                 <% } %>
                   <% if (upcomingPaymentMonths && upcomingPaymentMonths.length) { %>
                     <div class="payment-month-pagination">
-                      <button type="button" class="payment-month-pagination__btn" data-payment-prev aria-label="前の月" <%= upcomingPaymentMonths.length === 1 ? 'disabled' : '' %>>
+                      <button type="button" class="payment-month-pagination__btn" data-payment-prev aria-label="前の月"
+                        <%=upcomingPaymentMonths.length===1 ? 'disabled' : '' %>>
                         ‹
                       </button>
                       <div class="payment-month-tabs" data-payment-tabs>
                         <% upcomingPaymentMonths.forEach(function(month, index) { %>
-                          <button
-                            type="button"
-                            class="payment-month-tab <%= index === 0 ? 'is-active' : '' %>"
-                            data-payment-index="<%= index %>"
-                            aria-pressed="<%= index === 0 ? 'true' : 'false' %>">
+                          <button type="button" class="payment-month-tab <%= index === 0 ? 'is-active' : '' %>"
+                            data-payment-index="<%= index %>" aria-pressed="<%= index === 0 ? 'true' : 'false' %>">
                             <%= month.monthLabel %>
                           </button>
-                        <% }); %>
+                          <% }); %>
                       </div>
-                      <button type="button" class="payment-month-pagination__btn" data-payment-next aria-label="次の月" <%= upcomingPaymentMonths.length === 1 ? 'disabled' : '' %>>
+                      <button type="button" class="payment-month-pagination__btn" data-payment-next aria-label="次の月"
+                        <%=upcomingPaymentMonths.length===1 ? 'disabled' : '' %>>
                         ›
                       </button>
                     </div>
                     <div class="payment-month-panels" data-payment-panels>
                       <% upcomingPaymentMonths.forEach(function(month, index) { %>
-                        <div class="payment-month-panel <%= index === 0 ? 'is-active' : '' %>" data-payment-panel="<%= index %>" data-month-label="<%= month.monthLabel %>">
+                        <div class="payment-month-panel <%= index === 0 ? 'is-active' : '' %>"
+                          data-payment-panel="<%= index %>" data-month-label="<%= month.monthLabel %>">
                           <div class="card-panel__meta payment-groups">
                             <details class="payment-group" open>
                               <summary>
                                 <span>クレジットカード</span>
                                 <% if (month.creditPayments && month.creditPayments.length) { %>
-                                  <span class="payment-group__badge"><%= month.creditPayments.length %>件</span>
-                                <% } %>
+                                  <span class="payment-group__badge">
+                                    <%= month.creditPayments.length %>件
+                                  </span>
+                                  <% } %>
                               </summary>
                               <div class="payment-group__body">
                                 <% if (month.creditPayments && month.creditPayments.length) { %>
@@ -250,26 +277,36 @@
                                       <tbody>
                                         <% month.creditPayments.forEach(function(payment) { %>
                                           <tr>
-                                            <td><%= payment.formattedDate %></td>
-                                            <td><%= payment.subscriptionName %></td>
-                                            <td><%= payment.cardName %></td>
-                                            <td><%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small></td>
+                                            <td>
+                                              <%= payment.formattedDate %>
+                                            </td>
+                                            <td>
+                                              <%= payment.subscriptionName %>
+                                            </td>
+                                            <td>
+                                              <%= payment.cardName %>
+                                            </td>
+                                            <td>
+                                              <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
+                                            </td>
                                           </tr>
-                                        <% }); %>
+                                          <% }); %>
                                       </tbody>
                                     </table>
                                   </div>
-                                <% } else { %>
-                                  <p class="muted">この月のクレジットカードの支払い予定はありません。</p>
-                                <% } %>
+                                  <% } else { %>
+                                    <p class="muted">この月のクレジットカードの支払い予定はありません。</p>
+                                    <% } %>
                               </div>
                             </details>
                             <details class="payment-group" open>
                               <summary>
                                 <span>デビットカード</span>
                                 <% if (month.debitPayments && month.debitPayments.length) { %>
-                                  <span class="payment-group__badge"><%= month.debitPayments.length %>件</span>
-                                <% } %>
+                                  <span class="payment-group__badge">
+                                    <%= month.debitPayments.length %>件
+                                  </span>
+                                  <% } %>
                               </summary>
                               <div class="payment-group__body">
                                 <% if (month.debitPayments && month.debitPayments.length) { %>
@@ -286,27 +323,35 @@
                                       <tbody>
                                         <% month.debitPayments.forEach(function(payment) { %>
                                           <tr>
-                                            <td><%= payment.formattedDate %></td>
-                                            <td><%= payment.subscriptionName %></td>
-                                            <td><%= payment.cardName %></td>
-                                            <td><%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small></td>
+                                            <td>
+                                              <%= payment.formattedDate %>
+                                            </td>
+                                            <td>
+                                              <%= payment.subscriptionName %>
+                                            </td>
+                                            <td>
+                                              <%= payment.cardName %>
+                                            </td>
+                                            <td>
+                                              <%= payment.formattedAmount %> <small>(<%= payment.cycleLabel %>)</small>
+                                            </td>
                                           </tr>
-                                        <% }); %>
+                                          <% }); %>
                                       </tbody>
                                     </table>
                                   </div>
-                                <% } else { %>
-                                  <p class="muted">この月のデビットカードの支払い予定はありません。</p>
-                                <% } %>
+                                  <% } else { %>
+                                    <p class="muted">この月のデビットカードの支払い予定はありません。</p>
+                                    <% } %>
                               </div>
                             </details>
                           </div>
                         </div>
-                      <% }); %>
+                        <% }); %>
                     </div>
-                  <% } else { %>
-                    <p class="muted">今後3か月以内の支払い予定はありません。</p>
-                  <% } %>
+                    <% } else { %>
+                      <p class="muted">今後3か月以内の支払い予定はありません。</p>
+                      <% } %>
             </section>
       </div>
       <footer>
