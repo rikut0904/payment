@@ -31,7 +31,7 @@ var {
   groupSubscriptionsByCard,
   summarizeMonthlyTotals,
 } = require('./payments');
-var { consumeFlashMessage, setFlashMessage } = require('./flash');
+var { consumeFlashMessage, setFlashMessage } = require('./message');
 var { validateCardPayload } = require('./validators');
 var { asyncHandler, renderAddCardPage, renderEditCardPage } = require('./helpers');
 
