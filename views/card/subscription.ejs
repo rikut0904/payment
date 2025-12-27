@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body data-skip-auth-redirect="true">
+  <div class="layout">
+    <%- include('../partials/header', { title }) %>
+      <div class="content">
+        <section class="card">
+          <h2>
+            <%= formTitle || 'サブスクリプションを追加' %>
+          </h2>
+          <p>
+            <%= formDescription || '' %>
+          </p>
+          <% if (errorMessage) { %>
+            <div class="alert alert-error">
+              <%= errorMessage %>
+            </div>
+            <% } %>
+              <form class="form-grid" method="post" action="<%= formAction || '/card/subscription' %>"
+                id="subscriptionForm">
+                <% if (redirectPath) { %>
+                  <input type="hidden" name="redirect" value="<%= redirectPath %>">
+                  <% } %>
+                    <div class="form-field form-field--wide">
+                      <label for="cardId">紐づけるカード <span class="required">*</span></label>
+                      <select id="cardId" name="cardId" required>
+                        <% (cards || []).forEach(function(card) { %>
+                          <option value="<%= card.id %>" data-card-type="<%= card.cardType %>" <%=(formValues.cardId
+                            || '' )===card.id ? 'selected' : '' %>>
+                            <%= card.cardName %>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits || '----' %>）
+                          </option>
+                          <% }); %>
+                      </select>
+                    </div>
+                    <div class="form-field">
+                      <label for="paymentStartDate">支払い開始日 <span class="required">*</span></label>
+                      <input type="date" id="paymentStartDate" name="paymentStartDate"
+                        value="<%= formValues.paymentStartDate || '' %>" required>
+                    </div>
+                    <div class="form-field">
+                      <label for="serviceName">サービス名 <span class="required">*</span></label>
+                      <input type="text" id="serviceName" name="serviceName" value="<%= formValues.serviceName || '' %>"
+                        placeholder="例: Netflix" required>
+                    </div>
+                    <div class="form-field">
+                      <label for="amount">金額 <span class="required">*</span></label>
+                      <input type="number" id="amount" name="amount" value="<%= formValues.amount || '' %>" min="0"
+                        step="1" placeholder="例: 1500" required>
+                    </div>
+                    <div class="form-field">
+                      <label for="cycle">支払い頻度</label>
+                      <select id="cycle" name="cycle">
+                        <option value="monthly" <%=(formValues.cycle || 'monthly' )==='monthly' ? 'selected' : '' %>>月額
+                        </option>
+                        <option value="yearly" <%=(formValues.cycle || 'monthly' )==='yearly' ? 'selected' : '' %>>年額
+                        </option>
+                      </select>
+                    </div>
+                    <div class="form-field">
+                      <label for="currency">通貨</label>
+                      <select id="currency" name="currency">
+                        <% (currencies || []).forEach(function(currency) { %>
+                          <option value="<%= currency %>" <%=(formValues.currency || 'JPY' )===currency ? 'selected'
+                            : '' %>
+                            ><%= currency %>
+                          </option>
+                          <% }); %>
+                      </select>
+                    </div>
+                    <div class="form-field">
+                      <label for="registeredEmail">登録メールアドレス</label>
+                      <input type="email" id="registeredEmail" name="registeredEmail"
+                        value="<%= formValues.registeredEmail || '' %>" placeholder="example@example.com">
+                    </div>
+                    <div class="form-field form-field--wide">
+                      <label for="notes">メモ</label>
+                      <textarea id="notes" name="notes" rows="2"
+                        placeholder="用途や契約プランなど"><%= formValues.notes || '' %></textarea>
+                    </div>
+                    <div class="form-actions">
+                      <button type="submit">
+                        <%= submitLabel || 'サブスクを登録' %>
+                      </button>
+                    </div>
+              </form>
+              <div class="actions" style="margin-top: 24px;">
+                <a href="<%= cancelUrl || '/card' %>" class="btn btn-outline">戻る</a>
+              </div>
+        </section>
+      </div>
+      <footer>
+        <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+      </footer>
+  </div>
+  <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
+  <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+</body>
+
+</html>

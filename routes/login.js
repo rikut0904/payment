@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var admin = require('firebase-admin');
 var { getUserProfile } = require('../lib/firestoreUsers');
+var { fetchWithTimeout, isTimeoutError } = require('../lib/httpClient');
 
 function mapLoginErrorMessage(code) {
   switch (code) {
@@ -46,7 +47,7 @@ router.post('/', async function (req, res) {
   }
 
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
       {
         method: 'POST',
@@ -82,6 +83,9 @@ router.post('/', async function (req, res) {
     res.redirect('/dashboard');
   } catch (error) {
     console.error('ログイン処理でエラーが発生しました:', error);
+    if (isTimeoutError(error)) {
+      return renderLogin(req, res, { errorMessage: '通信がタイムアウトしました。時間をおいて再度お試しください。' });
+    }
     renderLogin(req, res, { errorMessage: mapLoginErrorMessage(error?.code) });
   }
 });

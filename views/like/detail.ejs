@@ -5,6 +5,9 @@
   <title>
     <%= title %>
   </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
@@ -16,9 +19,9 @@
           <h2>おすすめの詳細</h2>
           <div class="detail-grid">
             <div class="detail-column">
-            <p><strong>おすすめ登録日:</strong>
-              <%= entry.createdAt || '未入力' %>
-            </p>
+              <p><strong>おすすめ登録日:</strong>
+                <%= entry.createdAt || '未入力' %>
+              </p>
             </div>
             <div class="detail-column">
               <p><strong>ユーザー名:</strong>
@@ -57,7 +60,8 @@
           </div>
           <div class="actions">
             <a href="<%= redirectPath %>" class="btn">一覧へ戻る</a>
-            <a href="/like/update/<%= entry.id %>?redirect=<%= encodeURIComponent(redirectPath) %>&returnToDetail=1" class="btn edit-link">編集する</a>
+            <a href="/like/update/<%= entry.id %>?redirect=<%= encodeURIComponent(redirectPath) %>&returnToDetail=1"
+              class="btn edit-link">編集する</a>
           </div>
         </section>
       </div>

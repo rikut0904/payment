@@ -1,20 +1,25 @@
 <header class="app-header">
+  <div class="app-header__bar">
+    <div class="app-header__brand">
+      <a href="/dashboard" class="app-header__brand-link"><%= projectName || 'Payment' %></a>
+    </div>
+    <nav class="header-nav" aria-label="メインナビゲーション">
+      <ul>
+        <li><a href="/dashboard">ダッシュボード</a></li>
+        <li><a href="/card">支払情報管理</a></li>
+        <li><a href="/like">みんなのおすすめ</a></li>
+        <li><a href="/like/me">自分のおすすめ</a></li>
+        <li><a href="/setting">設定</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <% if (userName) { %>
+        <span class="user-chip"><%= userName %> さん</span>
+      <% } %>
+      <button id="logoutBtn" type="button" class="logout-btn">ログアウト</button>
+    </div>
+  </div>
   <div class="header-title">
     <h1><%= title %></h1>
-  </div>
-  <nav class="header-nav">
-    <ul>
-      <li><a href="/dashboard">ダッシュボード</a></li>
-      <li><a href="/card">支払情報管理</a></li>
-      <li><a href="/like">みんなのおすすめ</a></li>
-      <li><a href="/like/me">自分のおすすめ</a></li>
-      <li><a href="/setting">設定</a></li>
-    </ul>
-  </nav>
-  <div class="header-actions">
-    <% if (userName) { %>
-      <span class="user-chip"><%= userName %> さん</span>
-    <% } %>
-    <button id="logoutBtn" type="button" class="logout-btn">ログアウト</button>
   </div>
 </header>
