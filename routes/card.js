@@ -12,7 +12,7 @@ var {
   updateSubscription,
   deleteSubscription,
 } = require('../lib/firestoreCards');
-var { getExchangeRates } = require('../lib/exchangeRates');
+var { getExchangeRates, convertToJpy } = require('../lib/exchangeRates');
 var {
   CARD_TYPE_LABELS,
   CARD_TYPE_OPTIONS,
