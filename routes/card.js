@@ -896,11 +896,6 @@ router.get(
       cycle: 'monthly',
       paymentStartDate: formatIsoDate(new Date()),
     };
-    const redirectRaw = typeof req.query.redirect === 'string' ? req.query.redirect : '';
-    const safeRedirect = resolveRedirect(redirectRaw, '');
-    const editActionBase = `/card/subscription/${subscription.id}/edit`;
-    const formAction = safeRedirect ? `${editActionBase}?redirect=${encodeURIComponent(safeRedirect)}` : editActionBase;
-    const cancelUrl = safeRedirect || `/card/subscription/${subscription.id}`;
     renderSubscriptionFormPage(req, res, {
       cards,
       formValues: defaultValues,
@@ -1035,6 +1030,7 @@ router.get(
         }
       : null;
     const startDate = parseDateInput(subscription.paymentStartDate);
+    const nextPaymentDate = computeNextPaymentDate(subscription, card, startOfDay(new Date()));
     const detail = {
       id: subscription.id,
       serviceName: subscription.serviceName,
@@ -1046,8 +1042,9 @@ router.get(
       registeredEmail: subscription.registeredEmail || '',
       paymentStartDateDisplay: startDate ? formatDateForDisplay(startDate) : '未設定',
       notes: subscription.notes || '',
+      nextPaymentDisplay: nextPaymentDate ? formatDateForDisplay(nextPaymentDate) : '今後の予定なし',
     };
-    res.render('card/subscription-detail', {
+    res.render('card/detail', {
       title: 'サブスクリプション詳細',
       projectName: 'Payment',
       firebaseConfig: req.app.locals.firebaseConfig,

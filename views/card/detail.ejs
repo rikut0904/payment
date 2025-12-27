@@ -18,48 +18,67 @@
         <section class="card">
           <header class="card-detail__header">
             <div>
-              <h2><%= subscription.serviceName %></h2>
+              <h2>
+                <%= subscription.serviceName %>
+              </h2>
               <% if (card) { %>
                 <p class="muted">紐づけカード:
-                  <strong><%= card.cardName %></strong>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits %>）
+                  <strong>
+                    <%= card.cardName %>
+                  </strong>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits %>）
                 </p>
-              <% } %>
+                <% } %>
             </div>
             <div class="card-detail__amount">
               <span class="summary-label">支払額</span>
-              <strong><%= subscription.formattedAmount %></strong>
-              <span class="summary-label"><%= subscription.cycleLabel %></span>
+              <strong>
+                <%= subscription.formattedAmount %>
+              </strong>
+              <span class="summary-label">
+                <%= subscription.cycleLabel %>
+              </span>
             </div>
           </header>
           <dl class="detail-list">
             <div>
               <dt>通貨</dt>
-              <dd><%= subscription.currency %></dd>
+              <dd>
+                <%= subscription.currency %>
+              </dd>
             </div>
             <div>
               <dt>課金日（デビット）</dt>
-              <dd><%= subscription.billingDayDisplay %></dd>
+              <dd>
+                <%= subscription.billingDayDisplay %>
+              </dd>
             </div>
             <div>
               <dt>支払い開始日</dt>
-              <dd><%= subscription.paymentStartDateDisplay %></dd>
+              <dd>
+                <%= subscription.paymentStartDateDisplay %>
+              </dd>
             </div>
             <div>
               <dt>登録メールアドレス</dt>
-              <dd><%= subscription.registeredEmail || '未設定' %></dd>
+              <dd>
+                <%= subscription.registeredEmail || '未設定' %>
+              </dd>
             </div>
             <div class="detail-notes">
               <dt>メモ</dt>
-              <dd><%= subscription.notes || '未入力です。' %></dd>
+              <dd>
+                <%= subscription.notes || '未入力です。' %>
+              </dd>
             </div>
           </dl>
           <div class="detail-actions">
-            <a href="/card/subscription/<%= subscription.id %>/edit?redirect=<%= encodeURIComponent('/card/subscription/' + subscription.id) %>" class="btn btn-outline">編集</a>
+            <a href="/card" class="btn btn-outline">一覧に戻る</a>
+            <a href="/card/subscription/<%= subscription.id %>/edit?redirect=<%= encodeURIComponent('/card/subscription/' + subscription.id) %>"
+              class="btn btn-outline">編集</a>
             <form method="post" action="/card/subscription/<%= subscription.id %>/delete"
               onsubmit="return confirm('このサブスクリプションを削除しますか？');">
               <button type="submit" class="btn btn-danger">削除</button>
             </form>
-            <a href="/card" class="btn btn-outline">戻る</a>
           </div>
         </section>
       </div>
