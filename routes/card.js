@@ -10,6 +10,7 @@ var {
   listSubscriptionsByUser,
   getSubscriptionById,
   updateSubscription,
+  updateSubscriptionCard,
   deleteSubscription,
 } = require('../lib/firestoreCards');
 var { getExchangeRates, convertToJpy } = require('../lib/exchangeRates');
@@ -584,17 +585,10 @@ router.post(
       return res.redirect(redirectTarget);
     }
     try {
-      await updateSubscription({
+      await updateSubscriptionCard({
         id: subscriptionId,
         userId: sessionUid,
         cardId,
-        serviceName: subscription.serviceName,
-        amount: subscription.amount,
-        currency: subscription.currency,
-        cycle: subscription.cycle,
-        registeredEmail: subscription.registeredEmail,
-        paymentStartDate: subscription.paymentStartDate,
-        notes: subscription.notes,
       });
       setFlashMessage(res, 'success', 'サブスクリプションを紐づけました。');
     } catch (err) {
