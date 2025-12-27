@@ -1020,7 +1020,8 @@ router.get(
       setFlashMessage(res, 'error', '指定されたサブスクリプションが存在しません。');
       return res.redirect('/card');
     }
-    const card = subscription.cardId ? await getCardById(subscription.cardId) : null;
+    const fetchedCard = subscription.cardId ? await getCardById(subscription.cardId) : null;
+    const card = fetchedCard && fetchedCard.userId === sessionUid ? fetchedCard : null;
     const normalizedCard = card
       ? {
           id: card.id,
