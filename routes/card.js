@@ -215,7 +215,6 @@ function calculateUpcomingPayments(subscriptions, cardMap, options = {}) {
   const baseStart = options.startDateLimit ? startOfDay(options.startDateLimit) : startOfDay(new Date());
   const monthsLimit = Number.isFinite(options.monthsLimit) ? options.monthsLimit : UPCOMING_MONTHS;
   const horizon = new Date(baseStart.getFullYear(), baseStart.getMonth() + monthsLimit, 0);
-  const today = baseStart;
   const entries = [];
   subscriptions.forEach((subscription) => {
     const rawAmount = Number(subscription.amount);
@@ -236,9 +235,9 @@ function calculateUpcomingPayments(subscriptions, cardMap, options = {}) {
     if (!nextDate) {
       return;
     }
-    if (nextDate < today) {
+    if (nextDate < baseStart) {
       let guard = 0;
-      while (nextDate < today && guard < 60) {
+      while (nextDate < baseStart && guard < 60) {
         nextDate =
           cardType === 'credit'
             ? addCycleWithPaymentDay(nextDate, subscription.cycle, paymentDay)
@@ -563,8 +562,14 @@ router.get(
       })
     );
     const upcomingPayments = upcomingPaymentsRaw;
-    const monthlyTotalsRaw = summarizeMonthlyTotals(upcomingPayments, exchangeRates);
-    const upcomingPaymentMonths = buildUpcomingPaymentMonths(upcomingPayments);
+    const summaryStart = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1);
+    const summaryPayments = calculateUpcomingPayments(subscriptions, cardMap, { startDateLimit: summaryStart }).map((payment) =>
+      Object.assign({}, payment, {
+        formattedAmount: formatCurrency(payment.amount, payment.currency),
+      })
+    );
+    const monthlyTotalsRaw = summarizeMonthlyTotals(summaryPayments, exchangeRates);
+    const upcomingPaymentMonths = buildUpcomingPaymentMonths(summaryPayments);
     const monthlyTotals = upcomingPaymentMonths.map((month) => {
       const matched = monthlyTotalsRaw.find((item) => item.monthKey === month.monthKey);
       if (matched) {
