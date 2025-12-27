@@ -206,12 +206,6 @@ router.get(
           paymentStartDateDisplay: startDate ? formatDateForDisplay(startDate) : '未設定',
         });
       });
-    const upcomingPaymentsRaw = calculateUpcomingPayments(subscriptions, cardMap).map((payment) =>
-      Object.assign({}, payment, {
-        formattedAmount: formatCurrency(payment.amount, payment.currency),
-      })
-    );
-    const upcomingPayments = upcomingPaymentsRaw;
     const summaryStart = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1);
     const summaryPayments = calculateUpcomingPayments(subscriptions, cardMap, { startDateLimit: summaryStart }).map((payment) =>
       Object.assign({}, payment, {
