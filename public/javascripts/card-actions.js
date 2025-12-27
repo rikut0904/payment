@@ -18,6 +18,16 @@
         toggleFields(creditFields, isCredit);
         toggleFields(debitFields, !isCredit);
     }
+    function initCardMenuClose() {
+        document.addEventListener('click', (event) => {
+            document.querySelectorAll('.card-menu[open]').forEach((menu) => {
+                if (!menu.contains(event.target)) {
+                    menu.removeAttribute('open');
+                }
+            });
+        });
+    }
+
     function initPaymentMonthPagination() {
         const panelsContainer = document.querySelector('[data-payment-panels]');
         if (!panelsContainer) {
@@ -77,5 +87,6 @@
         updateCardTypeFields();
         cardTypeSelect.addEventListener('change', updateCardTypeFields);
     }
+    initCardMenuClose();
     initPaymentMonthPagination();
 })();

@@ -47,7 +47,7 @@
                         <details class="card-menu">
                           <summary><span class="material-icons">more_vert</span></summary>
                           <div class="card-menu__list">
-                            <a class="card-menu__item" href="/card/subscription?cardId=<%= card.id %>">このカードにサブスクを追加</a>
+                            <a class="card-menu__item" href="/card/subscription?cardId=<%= card.id %>">サブスクを追加</a>
                             <a class="card-menu__item" href="/card/edit/<%= card.id %>">カードを編集</a>
                             <form method="post" action="/card/delete/<%= card.id %>"
                               onsubmit="return confirm('このカードを削除しますか？紐づくサブスクは残ります。');">
