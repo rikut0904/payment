@@ -128,6 +128,7 @@
                                 <th>サービス名</th>
                                 <th>金額</th>
                                 <th>サイクル</th>
+                                <th>次回支払日</th>
                                 <th>操作</th>
                               </tr>
                             </thead>
@@ -144,6 +145,9 @@
                                   </td>
                                   <td>
                                     <%= sub.cycleLabel %>
+                                  </td>
+                                  <td>
+                                    <%= sub.nextPaymentDisplay || '今後の予定なし' %>
                                   </td>
                                   <td>
                                     <div class="table-actions">

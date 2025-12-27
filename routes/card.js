@@ -182,9 +182,40 @@ function formatDateForDisplay(date) {
   return `${year}/${month}/${day} (${weekdays[date.getDay()]})`;
 }
 
-function calculateUpcomingPayments(subscriptions, cardMap) {
-  const today = startOfDay(new Date());
-  const horizon = new Date(today.getFullYear(), today.getMonth() + UPCOMING_MONTHS, 0);
+function computeNextPaymentDate(subscription, card, referenceDate) {
+  const startDate = parseDateInput(subscription.paymentStartDate);
+  if (!startDate) {
+    return null;
+  }
+  const cardType = normalizeCardType(card?.cardType);
+  const paymentDay = cardType === 'credit' ? resolvePaymentDay(card) : null;
+  const cycle = subscription.cycle === 'yearly' ? 'yearly' : 'monthly';
+  let nextDate =
+    cardType === 'credit'
+      ? alignDateToPaymentDay(startDate, paymentDay)
+      : startOfDay(new Date(startDate.getTime()));
+  if (!nextDate) {
+    return null;
+  }
+  let guard = 0;
+  while (nextDate < referenceDate && guard < 120) {
+    nextDate =
+      cardType === 'credit'
+        ? addCycleWithPaymentDay(nextDate, cycle, paymentDay)
+        : addCycle(nextDate, cycle);
+    guard += 1;
+    if (!nextDate) {
+      return null;
+    }
+  }
+  return nextDate;
+}
+
+function calculateUpcomingPayments(subscriptions, cardMap, options = {}) {
+  const baseStart = options.startDateLimit ? startOfDay(options.startDateLimit) : startOfDay(new Date());
+  const monthsLimit = Number.isFinite(options.monthsLimit) ? options.monthsLimit : UPCOMING_MONTHS;
+  const horizon = new Date(baseStart.getFullYear(), baseStart.getMonth() + monthsLimit, 0);
+  const today = baseStart;
   const entries = [];
   subscriptions.forEach((subscription) => {
     const rawAmount = Number(subscription.amount);
@@ -463,6 +494,7 @@ router.get(
       listSubscriptionsByUser(sessionUid),
       exchangeRatesPromise,
     ]);
+    const referenceDate = startOfDay(new Date());
     const normalizedCards = cards.map((card) => {
       const cardType = normalizeCardType(card.cardType);
       return Object.assign({}, card, {
@@ -502,11 +534,13 @@ router.get(
         limitAmountDisplay: card.limitAmount ? formatCurrency(card.limitAmount, 'JPY') : '未設定',
         subscriptions: relatedSubscriptions.map((sub) => {
           const startDate = parseDateInput(sub.paymentStartDate);
+          const nextPaymentDate = computeNextPaymentDate(sub, card, referenceDate);
           return Object.assign({}, sub, {
             paymentStartDateDisplay: startDate ? formatDateForDisplay(startDate) : '未設定',
             formattedAmount: formatCurrency(Number(sub.amount) || 0, sub.currency || 'JPY'),
             cycleLabel: sub.cycle === 'yearly' ? '年額' : '月額',
             registeredEmail: sub.registeredEmail || '',
+            nextPaymentDisplay: nextPaymentDate ? formatDateForDisplay(nextPaymentDate) : '今後の予定なし',
           });
         }),
         subscriptionTotal: totalAmount,
