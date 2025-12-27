@@ -105,25 +105,6 @@
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
-  <script>
-    const cardSelect = document.getElementById('cardId');
-    const billingField = document.querySelector('[data-billing-field]');
-    const billingInput = document.getElementById('billingDay');
-    function updateBillingField() {
-      const selectedOption = cardSelect.options[cardSelect.selectedIndex];
-      const type = selectedOption ? selectedOption.getAttribute('data-card-type') : 'credit';
-      const isDebit = type === 'debit';
-      billingField.style.display = isDebit ? '' : 'none';
-      billingInput.disabled = !isDebit;
-      if (!isDebit) {
-        billingInput.value = '';
-      }
-    }
-    if (cardSelect && billingField && billingInput) {
-      cardSelect.addEventListener('change', updateBillingField);
-      updateBillingField();
-    }
-  </script>
 </body>
 
 </html>

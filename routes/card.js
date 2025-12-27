@@ -913,7 +913,6 @@ router.post(
     const cardId = (req.body.cardId || '').trim();
     const serviceName = (req.body.serviceName || '').trim();
     const amount = parseAmount(req.body.amount);
-    let billingDay = parseBillingDay(req.body.billingDay);
     const currency = normalizeCurrency(req.body.currency);
     const cycle = req.body.cycle === 'yearly' ? 'yearly' : 'monthly';
     const registeredEmail = (req.body.registeredEmail || '').trim();
@@ -924,7 +923,6 @@ router.post(
       cardId,
       serviceName,
       amount: req.body.amount,
-      billingDay: req.body.billingDay,
       currency,
       cycle,
       registeredEmail,
@@ -970,18 +968,6 @@ router.post(
         statusCode: 400,
       });
     }
-    const cardType = normalizeCardType(card.cardType);
-    if (cardType !== 'debit') {
-      billingDay = null;
-      formValues.billingDay = '';
-    } else if (req.body.billingDay && billingDay === null) {
-      return renderSubscriptionFormPage(req, res, {
-        cards,
-        errorMessage: '課金日は1〜31の範囲で指定してください。',
-        formValues,
-        statusCode: 400,
-      });
-    }
     if (!paymentStartDate) {
       return renderSubscriptionFormPage(req, res, {
         cards,
@@ -995,7 +981,6 @@ router.post(
       cardId,
       serviceName,
       amount,
-      billingDay,
       currency,
       cycle,
       registeredEmail,
@@ -1039,7 +1024,6 @@ router.get(
       formattedAmount: formatCurrency(Number(subscription.amount) || 0, subscription.currency || 'JPY'),
       currency: (subscription.currency || 'JPY').toUpperCase(),
       cycleLabel: subscription.cycle === 'yearly' ? '年額' : '月額',
-      billingDayDisplay: formatDayDisplay(subscription.billingDay),
       registeredEmail: subscription.registeredEmail || '',
       paymentStartDateDisplay: startDate ? formatDateForDisplay(startDate) : '未設定',
       notes: subscription.notes || '',
@@ -1081,7 +1065,6 @@ router.get(
       cardId: subscription.cardId,
       serviceName: subscription.serviceName,
       amount: subscription.amount,
-      billingDay: subscription.billingDay || '',
       currency: (subscription.currency || 'JPY').toUpperCase(),
       cycle: subscription.cycle || 'monthly',
       registeredEmail: subscription.registeredEmail || '',
@@ -1126,7 +1109,6 @@ router.post(
     const cardId = (req.body.cardId || '').trim();
     const serviceName = (req.body.serviceName || '').trim();
     const amount = parseAmount(req.body.amount);
-    let billingDay = parseBillingDay(req.body.billingDay);
     const currency = normalizeCurrency(req.body.currency);
     const cycle = req.body.cycle === 'yearly' ? 'yearly' : 'monthly';
     const registeredEmail = (req.body.registeredEmail || '').trim();
@@ -1136,7 +1118,6 @@ router.post(
       cardId,
       serviceName,
       amount: req.body.amount,
-      billingDay: req.body.billingDay,
       currency,
       cycle,
       registeredEmail,
@@ -1167,13 +1148,6 @@ router.post(
     if (amount === null || amount <= 0) {
       return renderError('支払額は0より大きい数値で入力してください。');
     }
-    const cardType = normalizeCardType(card.cardType);
-    if (cardType !== 'debit') {
-      billingDay = null;
-      formValues.billingDay = '';
-    } else if (req.body.billingDay && billingDay === null) {
-      return renderError('課金日は1〜31の範囲で指定してください。');
-    }
     if (!paymentStartDate) {
       return renderError('支払い開始日を入力してください。');
     }
@@ -1183,7 +1157,6 @@ router.post(
       cardId,
       serviceName,
       amount,
-      billingDay,
       currency,
       cycle,
       registeredEmail,
@@ -1219,14 +1192,6 @@ router.post(
       setFlashMessage(res, 'error', '指定されたカードが存在しません。');
       return res.redirect(redirectTarget);
     }
-    const cardType = normalizeCardType(card.cardType);
-    let billingDay = subscription.billingDay || null;
-    if (cardType !== 'debit') {
-      billingDay = null;
-    } else if (billingDay !== null && billingDay !== undefined) {
-      const parsed = parseBillingDay(billingDay);
-      billingDay = parsed === null ? null : parsed;
-    }
     try {
       await updateSubscription({
         id: subscriptionId,
@@ -1234,7 +1199,6 @@ router.post(
         cardId,
         serviceName: subscription.serviceName,
         amount: subscription.amount,
-        billingDay,
         currency: subscription.currency,
         cycle: subscription.cycle,
         registeredEmail: subscription.registeredEmail,
