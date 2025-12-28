@@ -60,16 +60,24 @@ router.post('/', async function (req, res) {
     });
   }
   try {
+    const previousName = req.session?.user?.name || '';
+    const previousEmail = req.session?.user?.email || '';
     if (admin.apps.length) {
       await admin.auth().updateUser(sessionUid, { email });
     }
-    const previousName = req.session?.user?.name || '';
-    await updateUserProfile(sessionUid, { name });
     try {
       await updateUserNameForUser(sessionUid, name);
+      await updateUserProfile(sessionUid, { name });
     } catch (likeErr) {
       if (previousName) {
         await updateUserNameForUser(sessionUid, previousName);
+      }
+      if (admin.apps.length && previousEmail && previousEmail !== email) {
+        try {
+          await admin.auth().updateUser(sessionUid, { email: previousEmail });
+        } catch (rollbackErr) {
+          console.error('Failed to rollback auth email', rollbackErr);
+        }
       }
       throw likeErr;
     }
@@ -165,10 +173,37 @@ router.post('/delete', async function (req, res) {
     return res.redirect('/login');
   }
   try {
-    await deleteLikesByUser(sessionUid);
-    await deleteUserProfile(sessionUid);
-    if (admin.apps.length) {
-      await admin.auth().deleteUser(sessionUid);
+    const failures = [];
+    try {
+      await deleteLikesByUser(sessionUid);
+    } catch (err) {
+      failures.push('likes');
+      console.error('Failed to delete likes for user', err);
+    }
+    try {
+      await deleteUserProfile(sessionUid);
+    } catch (err) {
+      failures.push('profile');
+      console.error('Failed to delete user profile', err);
+    }
+    let authDeleted = false;
+    try {
+      if (admin.apps.length) {
+        await admin.auth().deleteUser(sessionUid);
+      }
+      authDeleted = true;
+    } catch (err) {
+      failures.push('auth');
+      console.error('Failed to delete auth user', err);
+    }
+    if (!authDeleted) {
+      return renderSetting(req, res, {
+        errorMessage: 'アカウントの削除に失敗しました。時間をおいて再度お試しください。',
+        statusCode: 500,
+      });
+    }
+    if (failures.length) {
+      console.error('Account deletion completed with partial failures:', failures);
     }
     req.clearSession();
     return res.redirect('/login');
