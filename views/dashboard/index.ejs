@@ -16,8 +16,108 @@
     <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
-          <h2>ダッシュボード</h2>
-          <p>ダッシュボードはここに表示されます</p>
+          <h3>サマリー</h3>
+          <div class="dashboard-summary">
+            <article class="card-panel">
+              <header class="card-panel__header">
+                <div class="card-panel__title-block">
+                  <div class="card-panel__title-row">
+                    <h4>今月のサマリー</h4>
+                  </div>
+                </div>
+              </header>
+              <div class="card-panel__body">
+                <dl class="detail-list">
+                  <div>
+                    <dt>デビットカード支払い額</dt>
+                    <dd>
+                      <%= debitTotalFormatted || '¥0' %>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>クレジットカード支払い額</dt>
+                    <dd>
+                      <%= creditTotalFormatted || '¥0' %>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>月額合計</dt>
+                    <dd>
+                      <%= monthlyTotal?.formattedTotal || '¥0' %>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+            <article class="card-panel">
+              <header class="card-panel__header">
+                <div class="card-panel__title-block">
+                  <div class="card-panel__title-row">
+                    <h4>過去5か月の支払額推移</h4>
+                  </div>
+                </div>
+              </header>
+              <div class="card-panel__body">
+                <% const maxTotal = Number(historyMaxTotal) || 0; %>
+                <div class="bar-chart">
+                  <% (historyTotals || []).forEach(function(item) { %>
+                    <% const totalAmount = Number(item.totalAmount) || 0; %>
+                    <% const rawPercent = maxTotal ? Math.round((totalAmount / maxTotal) * 100) : 0; %>
+                    <% const heightValue = Number.isFinite(rawPercent) ? Math.max(4, rawPercent) : 4; %>
+                    <% const heightStyle = Number.isFinite(heightValue) ? heightValue : 4; %>
+                    <div class="bar-chart__item">
+                      <div class="bar-chart__bar-wrap">
+                        <div class="bar-chart__bar" data-height="<%= heightStyle %>"></div>
+                      </div>
+                      <div class="bar-chart__label">
+                        <%= item.monthLabel %>
+                      </div>
+                      <div class="bar-chart__value">
+                        <%= item.formattedTotal %>
+                      </div>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+        <section class="card">
+          <h3>今月の支払い予定</h3>
+          <% if (currentMonthPayments && currentMonthPayments.length) { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>サービス</th>
+                    <th>カード</th>
+                    <th>金額</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% currentMonthPayments.forEach(function(payment) { %>
+                    <tr>
+                      <td>
+                        <%= payment.formattedDate %>
+                      </td>
+                      <td>
+                        <%= payment.subscriptionName %>
+                      </td>
+                      <td class="muted">
+                        <%= payment.cardName %>
+                      </td>
+                      <td>
+                        <%= payment.formattedAmount %>
+                      </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <% } else { %>
+              <p class="muted">今月の支払い予定はありません。</p>
+              <% } %>
         </section>
       </div>
       <footer>
@@ -26,6 +126,14 @@
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+  <script>
+    document.querySelectorAll('.bar-chart__bar').forEach((bar) => {
+      const value = Number(bar.dataset.height);
+      if (Number.isFinite(value)) {
+        bar.style.height = `${value}%`;
+      }
+    });
+  </script>
 </body>
 
 </html>

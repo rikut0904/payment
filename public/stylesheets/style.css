@@ -151,7 +151,7 @@ body {
 .content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   padding: 0;
 }
 
@@ -161,6 +161,38 @@ body {
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.card .card-panel + .card-panel {
+  margin-top: 20px;
+}
+
+.dashboard-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 960px) {
+  .dashboard-summary {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .dashboard-summary .card-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .dashboard-summary .card-panel__body {
+    flex: 1;
+  }
+
+  .dashboard-summary .card-panel + .card-panel {
+    margin-top: 0;
+  }
 }
 
 .card h2 {
@@ -1006,6 +1038,51 @@ footer {
 .detail-list dd {
   margin: 6px 0 0;
   font-weight: 600;
+}
+
+.bar-chart {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 16px;
+  height: 180px;
+}
+
+.bar-chart__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.bar-chart__bar-wrap {
+  width: 100%;
+  max-width: 64px;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar-chart__bar {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 8px 8px 0 0;
+  height: 4px;
+  transition: height 0.3s ease;
+}
+
+.bar-chart__label {
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.bar-chart__value {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  text-align: center;
 }
 
 .detail-notes {
