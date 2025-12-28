@@ -16,10 +16,10 @@ function toJpyAmount(payment, exchangeRates) {
     return rawAmount;
   }
   if (!exchangeRates) {
-    return rawAmount;
+    return 0;
   }
   const converted = convertToJpy(rawAmount, normalizedCurrency, exchangeRates);
-  return converted === null ? rawAmount : converted;
+  return converted === null ? 0 : converted;
 }
 
 /* GET dashboard page. */
@@ -56,6 +56,16 @@ router.get(
       formattedTotal: formatCurrency(0, 'JPY'),
     };
     const currentMonthPayments = summaryPayments.filter((payment) => payment.monthKey === currentMonthKey);
+    const hasConversionWarning = currentMonthPayments.some((payment) => {
+      const normalizedCurrency = (payment.currency || 'JPY').toUpperCase();
+      if (normalizedCurrency === 'JPY') {
+        return false;
+      }
+      if (!exchangeRates) {
+        return true;
+      }
+      return convertToJpy(Number(payment.amount) || 0, normalizedCurrency, exchangeRates) === null;
+    });
     const debitTotalAmount = currentMonthPayments
       .filter((payment) => payment.cardType === 'debit')
       .reduce((sum, payment) => sum + toJpyAmount(payment, exchangeRates), 0);
@@ -101,6 +111,7 @@ router.get(
       monthlyTotal,
       debitTotalFormatted,
       creditTotalFormatted,
+      hasConversionWarning,
       currentMonthPayments,
       historyTotals,
       historyMaxTotal,

@@ -40,12 +40,15 @@
                       <%= creditTotalFormatted || '¥0' %>
                     </dd>
                   </div>
-                  <div>
-                    <dt>月額合計</dt>
-                    <dd>
-                      <%= monthlyTotal?.formattedTotal || '¥0' %>
-                    </dd>
-                  </div>
+                <div>
+                  <dt>月額合計</dt>
+                  <dd>
+                    <%= monthlyTotal?.formattedTotal || '¥0' %>
+                    <% if (hasConversionWarning) { %>
+                      <small class="muted">※換算できない通貨を含みます</small>
+                    <% } %>
+                  </dd>
+                </div>
                 </dl>
               </div>
             </article>
