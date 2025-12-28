@@ -128,14 +128,7 @@
   </div>
   <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
   <script type="module" src="/javascripts/firebase-auth.js" defer></script>
-  <script>
-    document.querySelectorAll('.bar-chart__bar').forEach((bar) => {
-      const value = Number(bar.dataset.height);
-      if (Number.isFinite(value)) {
-        bar.style.height = `${value}%`;
-      }
-    });
-  </script>
+  <script type="module" src="/javascripts/dashboard.js" defer></script>
 </body>
 
 </html>
