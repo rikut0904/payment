@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var admin = require('firebase-admin');
 var { createUserProfile } = require('../lib/firestoreUsers');
+var redirectIfAuthenticated = require('./middleware/redirectIfAuthenticated');
 
 function mapSignupErrorMessage(code) {
   switch (code) {
@@ -30,11 +31,11 @@ function renderSignin(req, res, options = {}) {
   );
 }
 
-router.get('/', function (req, res) {
+router.get('/', redirectIfAuthenticated, function (req, res) {
   renderSignin(req, res);
 });
 
-router.post('/', async function (req, res) {
+router.post('/', redirectIfAuthenticated, async function (req, res) {
   const { name, email, password } = req.body || {};
   const trimmedName = (name || '').trim();
   const trimmedEmail = (email || '').trim();

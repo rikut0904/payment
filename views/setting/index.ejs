@@ -17,7 +17,85 @@
       <div class="content">
         <section class="card">
           <h2>設定</h2>
-          <p>設定はここに表示されます</p>
+          <% if (successMessage) { %>
+            <div class="alert alert-success">
+              <%= successMessage %>
+            </div>
+          <% } %>
+          <% if (errorMessage) { %>
+            <div class="alert alert-error">
+              <%= errorMessage %>
+            </div>
+          <% } %>
+          <div class="setting-panels">
+            <div class="card-panel">
+              <header class="card-panel__header">
+                <div class="card-panel__title-block">
+                  <div class="card-panel__title-row">
+                    <h4>ユーザー情報</h4>
+                  </div>
+                </div>
+              </header>
+              <div class="card-panel__body">
+                <form class="form-grid form-grid--single" method="post" action="/setting">
+                  <div class="form-field">
+                    <label for="name">ユーザー名 <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" value="<%= formValues.name || '' %>" required>
+                  </div>
+                  <div class="form-field">
+                    <label for="email">メールアドレス <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" value="<%= formValues.email || '' %>" required>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit">更新する</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="card-panel">
+              <header class="card-panel__header">
+                <div class="card-panel__title-block">
+                  <div class="card-panel__title-row">
+                    <h4>パスワード変更</h4>
+                  </div>
+                </div>
+              </header>
+              <div class="card-panel__body">
+                <form class="form-grid form-grid--single" method="post" action="/setting/password">
+                  <div class="form-field">
+                    <label for="currentPassword">現在のパスワード <span class="required">*</span></label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                  </div>
+                  <div class="form-field">
+                    <label for="password">新しいパスワード <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required>
+                  </div>
+                  <div class="form-field">
+                    <label for="passwordConfirm">新しいパスワード（確認） <span class="required">*</span></label>
+                    <input type="password" id="passwordConfirm" name="passwordConfirm" required>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit">更新する</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="card-panel">
+            <header class="card-panel__header">
+              <div class="card-panel__title-block">
+                <div class="card-panel__title-row">
+                  <h4>アカウント削除</h4>
+                </div>
+              </div>
+            </header>
+            <div class="card-panel__body">
+              <p class="muted">削除するとデータは復元できません。十分に注意してください。</p>
+              <form method="post" action="/setting/delete" onsubmit="return confirm('アカウントを削除しますか？');">
+                <button type="submit" class="btn btn-danger">削除する</button>
+              </form>
+            </div>
+          </div>
         </section>
       </div>
       <footer>

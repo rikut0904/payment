@@ -167,6 +167,37 @@ body {
   margin-top: 20px;
 }
 
+.setting-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.setting-panels + .card-panel {
+  margin-top: 20px;
+}
+
+@media (min-width: 960px) {
+  .setting-panels {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .setting-panels .card-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .setting-panels .card-panel__body {
+    flex: 1;
+  }
+
+  .setting-panels .card-panel + .card-panel {
+    margin-top: 0;
+  }
+}
+
 .dashboard-summary {
   display: flex;
   flex-direction: column;
@@ -662,6 +693,10 @@ footer {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   margin-top: 16px;
+}
+
+.form-grid--single {
+  grid-template-columns: 1fr;
 }
 
 .form-field {
