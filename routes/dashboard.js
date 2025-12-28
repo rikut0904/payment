@@ -6,6 +6,22 @@ var { asyncHandler } = require('./card/helpers');
 var { buildUpcomingPaymentMonths, calculateUpcomingPayments, summarizeMonthlyTotals } = require('./card/payments');
 var { formatCurrency, startOfDay } = require('./card/utils');
 
+function toJpyAmount(payment, exchangeRates) {
+  const rawAmount = Number(payment.amount) || 0;
+  if (!Number.isFinite(rawAmount) || rawAmount <= 0) {
+    return 0;
+  }
+  const normalizedCurrency = (payment.currency || 'JPY').toUpperCase();
+  if (normalizedCurrency === 'JPY') {
+    return rawAmount;
+  }
+  if (!exchangeRates) {
+    return rawAmount;
+  }
+  const converted = convertToJpy(rawAmount, normalizedCurrency, exchangeRates);
+  return converted === null ? rawAmount : converted;
+}
+
 /* GET dashboard page. */
 router.get(
   '/',
@@ -40,27 +56,12 @@ router.get(
       formattedTotal: formatCurrency(0, 'JPY'),
     };
     const currentMonthPayments = summaryPayments.filter((payment) => payment.monthKey === currentMonthKey);
-    const toJpyAmount = (payment) => {
-      const rawAmount = Number(payment.amount) || 0;
-      if (!Number.isFinite(rawAmount) || rawAmount <= 0) {
-        return 0;
-      }
-      const normalizedCurrency = (payment.currency || 'JPY').toUpperCase();
-      if (normalizedCurrency === 'JPY') {
-        return rawAmount;
-      }
-      if (!exchangeRates) {
-        return rawAmount;
-      }
-      const converted = convertToJpy(rawAmount, normalizedCurrency, exchangeRates);
-      return converted === null ? rawAmount : converted;
-    };
     const debitTotalAmount = currentMonthPayments
       .filter((payment) => payment.cardType === 'debit')
-      .reduce((sum, payment) => sum + toJpyAmount(payment), 0);
+      .reduce((sum, payment) => sum + toJpyAmount(payment, exchangeRates), 0);
     const creditTotalAmount = currentMonthPayments
       .filter((payment) => payment.cardType === 'credit')
-      .reduce((sum, payment) => sum + toJpyAmount(payment), 0);
+      .reduce((sum, payment) => sum + toJpyAmount(payment, exchangeRates), 0);
     const debitTotalFormatted = formatCurrency(debitTotalAmount, 'JPY');
     const creditTotalFormatted = formatCurrency(creditTotalAmount, 'JPY');
 
