@@ -107,6 +107,7 @@ router.post('/password', async function (req, res) {
   if (!sessionUid) {
     return res.redirect('/login');
   }
+  const formValues = await loadUserFormValues(sessionUid, req);
   const currentPassword = (req.body.currentPassword || '').trim();
   const password = (req.body.password || '').trim();
   const passwordConfirm = (req.body.passwordConfirm || '').trim();
@@ -122,7 +123,6 @@ router.post('/password', async function (req, res) {
     validationError = 'メールアドレスが取得できませんでした。';
   }
   if (validationError) {
-    const formValues = await loadUserFormValues(sessionUid, req);
     return renderSetting(req, res, { errorMessage: validationError, formValues });
   }
   try {
@@ -131,7 +131,6 @@ router.post('/password', async function (req, res) {
     }
     if (!process.env.FIREBASE_API_KEY) {
       console.error('FIREBASE_API_KEY is not configured.');
-      const formValues = await loadUserFormValues(sessionUid, req);
       return renderSetting(req, res, {
         errorMessage: 'サーバーエラーが発生しました。時間をおいて再度お試しください。',
         formValues,
@@ -147,16 +146,13 @@ router.post('/password', async function (req, res) {
       }
     );
     if (!verifyResponse.ok) {
-      const formValues = await loadUserFormValues(sessionUid, req);
       return renderSetting(req, res, { errorMessage: '現在のパスワードが正しくありません。', formValues });
     }
     await admin.auth().updateUser(sessionUid, { password });
-    const formValues = await loadUserFormValues(sessionUid, req);
     renderSetting(req, res, { successMessage: 'パスワードを更新しました。', formValues });
   } catch (err) {
     console.error('Failed to update password', err);
     if (isTimeoutError(err)) {
-      const formValues = await loadUserFormValues(sessionUid, req);
       return renderSetting(req, res, {
         errorMessage: '通信がタイムアウトしました。時間をおいて再度お試しください。',
         formValues,
