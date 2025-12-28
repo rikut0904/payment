@@ -3,6 +3,7 @@ var router = express.Router();
 var admin = require('firebase-admin');
 var { getUserProfile } = require('../lib/firestoreUsers');
 var { fetchWithTimeout, isTimeoutError } = require('../lib/httpClient');
+var redirectIfAuthenticated = require('./middleware/redirectIfAuthenticated');
 
 function mapLoginErrorMessage(code) {
   switch (code) {
@@ -30,26 +31,25 @@ function renderLogin(req, res, options = {}) {
   if (req.query.timeout) {
     baseOptions.infoMessage = '一定時間操作がなかったため自動的にログアウトしました。';
   }
-  res.render('login', Object.assign(baseOptions, options));
+  const statusCode = options.statusCode || 200;
+  res.status(statusCode).render('login', Object.assign(baseOptions, options));
 }
 
-router.get('/', function (req, res) {
-  if (req.session?.user?.uid) {
-    return res.redirect('/dashboard');
-  }
+router.get('/', redirectIfAuthenticated, function (req, res) {
   renderLogin(req, res);
 });
 
-router.post('/', async function (req, res) {
-  if (req.session?.user?.uid) {
-    return res.redirect('/dashboard');
-  }
+router.post('/', redirectIfAuthenticated, async function (req, res) {
   const { email, password } = req.body || {};
   if (!email || !password) {
     return renderLogin(req, res, { errorMessage: 'メールアドレスとパスワードを入力してください。' });
   }
   if (!process.env.FIREBASE_API_KEY) {
-    return renderLogin(req, res, { errorMessage: 'Firebase APIキーが設定されていません。' });
+    console.error('FIREBASE_API_KEY is not configured.');
+    return renderLogin(req, res, {
+      errorMessage: 'サーバーエラーが発生しました。時間をおいて再度お試しください。',
+      statusCode: 500,
+    });
   }
 
   try {

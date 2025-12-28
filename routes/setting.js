@@ -2,11 +2,11 @@ var express = require('express');
 var admin = require('firebase-admin');
 var router = express.Router();
 var { getUserProfile, updateUserProfile, deleteUserProfile } = require('../lib/firestoreUsers');
-var { updateUserNameForUser } = require('../lib/firestoreLikes');
+var { updateUserNameForUser, deleteLikesByUser } = require('../lib/firestoreLikes');
 var { fetchWithTimeout, isTimeoutError } = require('../lib/httpClient');
 
-function renderSetting(req, res, { errorMessage = '', successMessage = '', formValues = {} } = {}) {
-  res.render('setting/index', {
+function renderSetting(req, res, { errorMessage = '', successMessage = '', formValues = {}, statusCode = 200 } = {}) {
+  res.status(statusCode).render('setting/index', {
     title: '設定',
     projectName: 'Payment',
     firebaseConfig: req.app.locals.firebaseConfig,
@@ -60,10 +60,18 @@ router.post('/', async function (req, res) {
     });
   }
   try {
-    await updateUserProfile(sessionUid, { name });
-    await updateUserNameForUser(sessionUid, name);
     if (admin.apps.length) {
       await admin.auth().updateUser(sessionUid, { email });
+    }
+    const previousName = req.session?.user?.name || '';
+    await updateUserProfile(sessionUid, { name });
+    try {
+      await updateUserNameForUser(sessionUid, name);
+    } catch (likeErr) {
+      if (previousName) {
+        await updateUserNameForUser(sessionUid, previousName);
+      }
+      throw likeErr;
     }
     req.saveSession({
       user: {
@@ -95,29 +103,32 @@ router.post('/password', async function (req, res) {
   const password = (req.body.password || '').trim();
   const passwordConfirm = (req.body.passwordConfirm || '').trim();
   const email = req.session?.user?.email || '';
+  let validationError = '';
   if (!currentPassword) {
-    const formValues = await loadUserFormValues(sessionUid, req);
-    return renderSetting(req, res, { errorMessage: '現在のパスワードを入力してください。', formValues });
+    validationError = '現在のパスワードを入力してください。';
+  } else if (!password) {
+    validationError = 'パスワードを入力してください。';
+  } else if (password !== passwordConfirm) {
+    validationError = 'パスワードが一致しません。';
+  } else if (!email) {
+    validationError = 'メールアドレスが取得できませんでした。';
   }
-  if (!password) {
+  if (validationError) {
     const formValues = await loadUserFormValues(sessionUid, req);
-    return renderSetting(req, res, { errorMessage: 'パスワードを入力してください。', formValues });
-  }
-  if (password !== passwordConfirm) {
-    const formValues = await loadUserFormValues(sessionUid, req);
-    return renderSetting(req, res, { errorMessage: 'パスワードが一致しません。', formValues });
-  }
-  if (!email) {
-    const formValues = await loadUserFormValues(sessionUid, req);
-    return renderSetting(req, res, { errorMessage: 'メールアドレスが取得できませんでした。', formValues });
+    return renderSetting(req, res, { errorMessage: validationError, formValues });
   }
   try {
     if (!admin.apps.length) {
       throw new Error('Firebase Admin SDK is not initialized.');
     }
     if (!process.env.FIREBASE_API_KEY) {
+      console.error('FIREBASE_API_KEY is not configured.');
       const formValues = await loadUserFormValues(sessionUid, req);
-      return renderSetting(req, res, { errorMessage: 'Firebase APIキーが設定されていません。', formValues });
+      return renderSetting(req, res, {
+        errorMessage: 'サーバーエラーが発生しました。時間をおいて再度お試しください。',
+        formValues,
+        statusCode: 500,
+      });
     }
     const verifyResponse = await fetchWithTimeout(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
@@ -154,10 +165,11 @@ router.post('/delete', async function (req, res) {
     return res.redirect('/login');
   }
   try {
+    await deleteLikesByUser(sessionUid);
+    await deleteUserProfile(sessionUid);
     if (admin.apps.length) {
       await admin.auth().deleteUser(sessionUid);
     }
-    await deleteUserProfile(sessionUid);
     req.clearSession();
     return res.redirect('/login');
   } catch (err) {
