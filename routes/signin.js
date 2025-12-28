@@ -31,10 +31,16 @@ function renderSignin(req, res, options = {}) {
 }
 
 router.get('/', function (req, res) {
+  if (req.session?.user?.uid) {
+    return res.redirect('/dashboard');
+  }
   renderSignin(req, res);
 });
 
 router.post('/', async function (req, res) {
+  if (req.session?.user?.uid) {
+    return res.redirect('/dashboard');
+  }
   const { name, email, password } = req.body || {};
   const trimmedName = (name || '').trim();
   const trimmedEmail = (email || '').trim();

@@ -34,10 +34,16 @@ function renderLogin(req, res, options = {}) {
 }
 
 router.get('/', function (req, res) {
+  if (req.session?.user?.uid) {
+    return res.redirect('/dashboard');
+  }
   renderLogin(req, res);
 });
 
 router.post('/', async function (req, res) {
+  if (req.session?.user?.uid) {
+    return res.redirect('/dashboard');
+  }
   const { email, password } = req.body || {};
   if (!email || !password) {
     return renderLogin(req, res, { errorMessage: 'メールアドレスとパスワードを入力してください。' });
