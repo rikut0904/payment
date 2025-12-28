@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -16,8 +17,6 @@
     <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
-          <h2>おすすめを編集</h2>
-          <p>商品名と購入日は必須です。商品概要と購入先URLは任意です。</p>
           <form action="/like/update/<%= entry.id %>" method="post">
             <input type="hidden" name="redirect" value="<%= redirectPath %>">
             <% if (returnToDetail) { %>

@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -41,7 +42,7 @@
               </p>
               <p><strong>購入先URL:</strong>
                 <% if (entry.url) { %>
-                  <a href="<%= entry.url %>" target="_blank" rel="noopener noreferrer">
+                  <a href="<%= entry.url %>" target="_blank" rel="noopener noreferrer" class="wrap-url">
                     <%= entry.url %>
                   </a>
                   <% } else { %>

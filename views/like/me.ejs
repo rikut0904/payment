@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -69,48 +70,50 @@
             </div>
           </details>
           <% if(content && content.length) { %>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>ユーザー名</th>
-                  <th>商品名</th>
-                  <th>カテゴリ</th>
-                  <th>私の購入日</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% content.forEach(function(item) { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
                   <tr>
-                    <td>
-                      <%= item.userName || '' %>
-                    </td>
-                    <td>
-                      <a href="/like/detail/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>">
-                        <%= truncate(item.title, 30) %>
-                      </a>
-                    </td>
-                    <td>
-                      <%= item.category || '未分類' %>
-                    </td>
-                    <td>
-                      <%= item.date || '' %>
-                    </td>
-                    <td class="actions-cell">
-                      <details class="card-menu">
-                        <summary><span class="material-icons">more_vert</span></summary>
-                        <div class="card-menu__list">
-                          <a href="/like/update/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>"
-                            class="card-menu__item edit-link">編集</a>
-                          <a href="#" class="card-menu__item card-menu__item--danger delete-link"
-                            data-id="<%= item.id %>">削除</a>
-                        </div>
-                      </details>
-                    </td>
+                    <th>ユーザー名</th>
+                    <th>商品名</th>
+                    <th>カテゴリ</th>
+                    <th>私の購入日</th>
+                    <th>操作</th>
                   </tr>
-                  <% }) %>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <% content.forEach(function(item) { %>
+                    <tr>
+                      <td>
+                        <%= item.userName || '' %>
+                      </td>
+                      <td>
+                        <a href="/like/detail/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>">
+                          <%= truncate(item.title, 30) %>
+                        </a>
+                      </td>
+                      <td>
+                        <%= item.category || '未分類' %>
+                      </td>
+                      <td>
+                        <%= item.date || '' %>
+                      </td>
+                      <td class="actions-cell">
+                        <details class="card-menu">
+                          <summary><span class="material-icons">more_vert</span></summary>
+                          <div class="card-menu__list">
+                            <a href="/like/update/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>"
+                              class="card-menu__item edit-link">編集</a>
+                            <a href="#" class="card-menu__item card-menu__item--danger delete-link"
+                              data-id="<%= item.id %>">削除</a>
+                          </div>
+                        </details>
+                      </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+              </table>
+            </div>
             <% if (pagination && pagination.totalPages> 1) { %>
               <nav class="pagination-bar" aria-label="自分のおすすめ一覧ページネーション">
                 <div class="pagination-summary">
