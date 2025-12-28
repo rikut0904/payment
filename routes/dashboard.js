@@ -74,11 +74,10 @@ router.get(
         monthLabel: `${date.getFullYear()}年${date.getMonth() + 1}月`,
       });
     }
-    const historyKeys = new Set(historyMonths.map((month) => month.monthKey));
     const historyPayments = calculateUpcomingPayments(subscriptions, cardMap, {
       startDateLimit: historyMonths[0].date,
-      monthsLimit: 6,
-    }).filter((payment) => historyKeys.has(payment.monthKey));
+      monthsLimit: 5,
+    });
     const historyTotalsRaw = summarizeMonthlyTotals(historyPayments, exchangeRates);
     const historyTotals = historyMonths.map((month) => {
       const matched = historyTotalsRaw.find((item) => item.monthKey === month.monthKey);
