@@ -66,12 +66,20 @@ router.get(
       }
       return convertToJpy(Number(payment.amount) || 0, normalizedCurrency, exchangeRates) === null;
     });
-    const debitTotalAmount = currentMonthPayments
-      .filter((payment) => payment.cardType === 'debit')
-      .reduce((sum, payment) => sum + toJpyAmount(payment, exchangeRates), 0);
-    const creditTotalAmount = currentMonthPayments
-      .filter((payment) => payment.cardType === 'credit')
-      .reduce((sum, payment) => sum + toJpyAmount(payment, exchangeRates), 0);
+    const totals = currentMonthPayments.reduce(
+      (acc, payment) => {
+        const amount = toJpyAmount(payment, exchangeRates);
+        if (payment.cardType === 'debit') {
+          acc.debit += amount;
+        } else {
+          acc.credit += amount;
+        }
+        return acc;
+      },
+      { debit: 0, credit: 0 }
+    );
+    const debitTotalAmount = totals.debit;
+    const creditTotalAmount = totals.credit;
     const debitTotalFormatted = formatCurrency(debitTotalAmount, 'JPY');
     const creditTotalFormatted = formatCurrency(creditTotalAmount, 'JPY');
 
