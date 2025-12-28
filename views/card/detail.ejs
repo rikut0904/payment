@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body data-skip-auth-redirect="true">
+  <div class="layout">
+    <%- include('../partials/header', { title }) %>
+      <div class="content">
+        <section class="card">
+          <header class="card-detail__header">
+            <div>
+              <h2>
+                <%= subscription.serviceName %>
+              </h2>
+              <% if (card) { %>
+                <p class="muted">紐づけカード:
+                  <strong>
+                    <%= card.cardName %>
+                  </strong>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits %>）
+                </p>
+                <% } %>
+            </div>
+            <div class="card-detail__amount">
+              <span class="summary-label">支払額</span>
+              <strong>
+                <%= subscription.formattedAmount %>
+              </strong>
+              <span class="summary-label">
+                <%= subscription.cycleLabel %>
+              </span>
+            </div>
+          </header>
+          <dl class="detail-list">
+            <div>
+              <dt>通貨</dt>
+              <dd>
+                <%= subscription.currency %>
+              </dd>
+            </div>
+            <div>
+              <dt>支払い開始日</dt>
+              <dd>
+                <%= subscription.paymentStartDateDisplay %>
+              </dd>
+            </div>
+            <div>
+              <dt>登録メールアドレス</dt>
+              <dd>
+                <%= subscription.registeredEmail || '未設定' %>
+              </dd>
+            </div>
+            <div class="detail-notes">
+              <dt>メモ</dt>
+              <dd>
+                <%= subscription.notes || '未入力です。' %>
+              </dd>
+            </div>
+          </dl>
+          <div class="detail-actions">
+            <a href="/card" class="btn btn-outline">一覧に戻る</a>
+            <a href="/card/subscription/<%= subscription.id %>/edit?redirect=<%= encodeURIComponent('/card/subscription/' + subscription.id) %>"
+              class="btn btn-outline">編集</a>
+            <form method="post" action="/card/subscription/<%= subscription.id %>/delete"
+              onsubmit="return confirm('このサブスクリプションを削除しますか？');">
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
+      </footer>
+  </div>
+  <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
+  <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+</body>
+
+</html>

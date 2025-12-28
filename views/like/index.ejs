@@ -19,7 +19,7 @@
           <h2>
             <%= title %>
           </h2>
-          <details class="filter-accordion" <%= showFilterOpen ? 'open' : '' %>>
+          <details class="filter-accordion" <%=showFilterOpen ? 'open' : '' %>>
             <summary>ソート・フィルタ条件</summary>
             <div class="filter-bar">
               <form class="filter-form" method="get" action="<%= filterAction || '/like' %>">
@@ -30,43 +30,43 @@
                       <input type="text" id="filterUserName" name="userName" placeholder="例: 田中"
                         value="<%= filters.userName || '' %>">
                     </div>
-                  <% } %>
-                  <div class="filter-field">
-                    <label for="filterTitle">商品名</label>
-                    <input type="text" id="filterTitle" name="title" placeholder="部分一致で検索"
-                      value="<%= filters.title || '' %>">
-                  </div>
-                  <div class="filter-field">
-                    <label for="categoryFilter">カテゴリ</label>
-                    <select id="categoryFilter" name="category">
-                      <option value="" <%=!filters.category ? 'selected' : '' %>>すべて</option>
-                      <% (likeCategories || []).forEach(function(category) { %>
-                        <option value="<%= category %>" <%=filters.category===category ? 'selected' : '' %>>
-                          <%= category %>
-                        </option>
-                        <% }) %>
-                    </select>
-                  </div>
-                  <div class="filter-field">
-                    <label for="sortField">ソート項目</label>
-                    <select id="sortField" name="sort">
-                      <% (sortOptions || []).forEach(function(option) { %>
-                        <option value="<%= option.value %>" <%=sortField===option.value ? 'selected' : '' %>>
-                          <%= option.label %>
-                        </option>
-                        <% }) %>
-                    </select>
-                  </div>
-                  <div class="filter-field">
-                    <label for="sortOrder">並び順</label>
-                    <select id="sortOrder" name="order">
-                      <% (sortOrderOptions || []).forEach(function(option) { %>
-                        <option value="<%= option.value %>" <%=sortOrder===option.value ? 'selected' : '' %>>
-                          <%= option.label %>
-                        </option>
-                        <% }) %>
-                    </select>
-                  </div>
+                    <% } %>
+                      <div class="filter-field">
+                        <label for="filterTitle">商品名</label>
+                        <input type="text" id="filterTitle" name="title" placeholder="部分一致で検索"
+                          value="<%= filters.title || '' %>">
+                      </div>
+                      <div class="filter-field">
+                        <label for="categoryFilter">カテゴリ</label>
+                        <select id="categoryFilter" name="category">
+                          <option value="" <%=!filters.category ? 'selected' : '' %>>すべて</option>
+                          <% (likeCategories || []).forEach(function(category) { %>
+                            <option value="<%= category %>" <%=filters.category===category ? 'selected' : '' %>>
+                              <%= category %>
+                            </option>
+                            <% }) %>
+                        </select>
+                      </div>
+                      <div class="filter-field">
+                        <label for="sortField">ソート項目</label>
+                        <select id="sortField" name="sort">
+                          <% (sortOptions || []).forEach(function(option) { %>
+                            <option value="<%= option.value %>" <%=sortField===option.value ? 'selected' : '' %>>
+                              <%= option.label %>
+                            </option>
+                            <% }) %>
+                        </select>
+                      </div>
+                      <div class="filter-field">
+                        <label for="sortOrder">並び順</label>
+                        <select id="sortOrder" name="order">
+                          <% (sortOrderOptions || []).forEach(function(option) { %>
+                            <option value="<%= option.value %>" <%=sortOrder===option.value ? 'selected' : '' %>>
+                              <%= option.label %>
+                            </option>
+                            <% }) %>
+                        </select>
+                      </div>
                 </div>
                 <div class="filter-actions">
                   <button type="submit">条件を適用</button>
@@ -104,11 +104,13 @@
                       <%= item.date || '' %>
                     </td>
                     <td class="actions-cell">
-                      <details>
+                      <details class="card-menu">
                         <summary><span class="material-icons">more_vert</span></summary>
-                        <div class="actions-menu">
-                          <a href="/like/update/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>" class="edit-link">編集</a>
-                          <a href="#" class="delete-link" data-id="<%= item.id %>">削除</a>
+                        <div class="card-menu__list">
+                          <a href="/like/update/<%= item.id %>?redirect=<%= encodeURIComponent(currentListUrl) %>"
+                            class="card-menu__item edit-link">編集</a>
+                          <a href="#" class="card-menu__item card-menu__item--danger delete-link"
+                            data-id="<%= item.id %>">削除</a>
                         </div>
                       </details>
                     </td>
@@ -116,44 +118,53 @@
                   <% }) %>
               </tbody>
             </table>
-            <% if (pagination && pagination.totalPages > 1) { %>
+            <% if (pagination && pagination.totalPages> 1) { %>
               <nav class="pagination-bar" aria-label="おすすめ一覧ページネーション">
                 <div class="pagination-summary">
                   <span class="pagination-total">全<%= pagination.totalItems %>件</span>
-                  <span class="pagination-current"><%= pagination.currentPage %>/<%= pagination.totalPages %>ページ</span>
+                  <span class="pagination-current">
+                    <%= pagination.currentPage %>/<%= pagination.totalPages %>ページ
+                  </span>
                 </div>
                 <div class="pagination-links" role="list">
                   <% if (pagination.hasPrev) { %>
-                    <a href="<%= (listPath || '/like') %>?<%- pagination.prevQuery %>" class="pagination-link arrow" aria-label="前のページ">
+                    <a href="<%= (listPath || '/like') %>?<%- pagination.prevQuery %>" class="pagination-link arrow"
+                      aria-label="前のページ">
                       ‹
                     </a>
-                  <% } else { %>
-                    <span class="pagination-link arrow disabled" aria-hidden="true">‹</span>
-                  <% } %>
-                  <% pagination.pages.forEach(function(page) { %>
-                    <% if (page.isCurrent) { %>
-                      <span class="pagination-link current" aria-current="page"><%= page.number %></span>
                     <% } else { %>
-                      <a href="<%= (listPath || '/like') %>?<%- page.query %>" class="pagination-link"><%= page.number %></a>
-                    <% } %>
-                  <% }); %>
-                  <% if (pagination.hasNext) { %>
-                    <a href="<%= (listPath || '/like') %>?<%- pagination.nextQuery %>" class="pagination-link arrow" aria-label="次のページ">
-                      ›
-                    </a>
-                  <% } else { %>
-                    <span class="pagination-link arrow disabled" aria-hidden="true">›</span>
-                  <% } %>
+                      <span class="pagination-link arrow disabled" aria-hidden="true">‹</span>
+                      <% } %>
+                        <% pagination.pages.forEach(function(page) { %>
+                          <% if (page.isCurrent) { %>
+                            <span class="pagination-link current" aria-current="page">
+                              <%= page.number %>
+                            </span>
+                            <% } else { %>
+                              <a href="<%= (listPath || '/like') %>?<%- page.query %>" class="pagination-link">
+                                <%= page.number %>
+                              </a>
+                              <% } %>
+                                <% }); %>
+                                  <% if (pagination.hasNext) { %>
+                                    <a href="<%= (listPath || '/like') %>?<%- pagination.nextQuery %>"
+                                      class="pagination-link arrow" aria-label="次のページ">
+                                      ›
+                                    </a>
+                                    <% } else { %>
+                                      <span class="pagination-link arrow disabled" aria-hidden="true">›</span>
+                                      <% } %>
                 </div>
               </nav>
-            <% } %>
-            <% } else { %>
-              <div class="text-center">
-                <h2>おすすめがありません!!</h2>
-                <p>おすすめを追加してください!!</p>
-              </div>
               <% } %>
-              <a href="/like/add?redirect=<%= encodeURIComponent(currentListUrl) %>" class="btn btn-primary pagination-add-action">おすすめを追加</a>
+                <% } else { %>
+                  <div class="text-center">
+                    <h2>おすすめがありません!!</h2>
+                    <p>おすすめを追加してください!!</p>
+                  </div>
+                  <% } %>
+                    <a href="/like/add?redirect=<%= encodeURIComponent(currentListUrl) %>"
+                      class="btn btn-primary pagination-add-action">おすすめを追加</a>
         </section>
       </div>
       <footer>
