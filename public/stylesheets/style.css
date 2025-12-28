@@ -12,6 +12,22 @@
   --success: #059669;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-gradient: #121212;
+    --surface: #1a1625;
+    --card-bg: #1e1e1e;
+    --accent: #a78bfa;
+    --accent-rgb: 167, 139, 250;
+    --text-main: #b0b0b0;
+    --text-sub: #9ca3af;
+    --border: #2d2d2d;
+    --muted-border: #2d2d2d;
+    --error: #f87171;
+    --success: #34d399;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -22,6 +38,12 @@ body {
   font-family: 'Noto Sans JP', 'Hiragino Sans', 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
   background: var(--bg-gradient);
   color: var(--text-main);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: var(--bg-gradient);
+  }
 }
 
 .is-menu-open {
@@ -43,6 +65,12 @@ body {
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app-header {
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.45);
+  }
 }
 
 .app-header__bar {
@@ -69,6 +97,20 @@ body {
 .header-menu-toggle:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .header-menu-toggle {
+    background: var(--card-bg);
+  }
+
+  .header-drawer__overlay {
+    background: rgba(2, 6, 23, 0.55);
+  }
+
+  .header-drawer__panel {
+    box-shadow: -12px 0 24px rgba(0, 0, 0, 0.45);
+  }
 }
 
 .header-drawer {
@@ -242,6 +284,21 @@ body {
   box-shadow: 0 12px 22px rgba(var(--accent-rgb), 0.3);
 }
 
+@media (prefers-color-scheme: dark) {
+  .logout-btn {
+    background: var(--card-bg);
+    color: var(--accent);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .logout-btn:hover {
+    background: var(--card-bg);
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.5);
+  }
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -255,6 +312,12 @@ body {
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  }
 }
 
 .card .card-panel + .card-panel {
@@ -393,6 +456,12 @@ ul {
   color: var(--accent);
   border: 1px solid var(--accent);
 }
+
+@media (prefers-color-scheme: dark) {
+  .btn.btn-small {
+    background: var(--card-bg);
+  }
+}
 .btn.btn-solid {
   background: var(--accent);
   color: #fff;
@@ -433,6 +502,25 @@ select {
   font-family: inherit;
   background: #fff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  input,
+  textarea,
+  select {
+    background: var(--card-bg);
+    color: var(--text-main);
+    border-color: #404040;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-sub);
+  }
+
+  input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(0.9) brightness(1.2);
+  }
 }
 
 textarea {
@@ -681,6 +769,16 @@ footer {
   background: #f4f6fb;
 }
 
+@media (prefers-color-scheme: dark) {
+  .pagination-link {
+    background: var(--card-bg);
+  }
+
+  .pagination-link.disabled {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
 .pagination-link.arrow {
   font-size: 20px;
   line-height: 1;
@@ -830,6 +928,13 @@ footer {
   gap: 16px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .card-panel {
+    background: var(--card-bg);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  }
+}
+
 .card-panel__header {
   display: flex;
   flex-wrap: wrap;
@@ -902,6 +1007,17 @@ footer {
   flex-direction: column;
   gap: 4px;
   z-index: 10;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card-menu[open] summary {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .card-menu__list {
+    background: var(--card-bg);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+  }
 }
 
 .card-menu__list form {
@@ -1007,6 +1123,21 @@ footer {
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .table {
+    background: var(--card-bg);
+  }
+
+  .table th {
+    background: rgba(var(--accent-rgb), 0.15);
+    color: #e5e7eb;
+  }
+
+  .table td {
+    color: #e5e7eb;
+  }
 }
 
 .table th,
@@ -1307,6 +1438,13 @@ footer {
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
+@media (prefers-color-scheme: dark) {
+  .payment-month-pagination__btn,
+  .payment-month-tab {
+    background: var(--card-bg);
+  }
+}
+
 .payment-month-tab.is-active {
   background: var(--accent);
   color: #fff;
@@ -1340,6 +1478,13 @@ footer {
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
   padding: 0 20px;
   flex: 1 1 320px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .payment-group {
+    background: var(--card-bg);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+  }
 }
 
 .payment-group summary {
