@@ -86,16 +86,7 @@
                             <%= card.limitAmountDisplay %>
                           </dd>
                         </div>
-                        <div>
-                          <dt>サブスク合計</dt>
-                          <dd>
-                            <%= card.formattedSubscriptionTotal %>
-                              <% if (card.conversionWarning) { %>
-                                <small class="muted">※換算できない通貨を含みます</small>
-                                <% } %>
-                          </dd>
-                        </div>
-                        <% } else { %>
+                        <% } %>
                           <div>
                             <dt>支払合計</dt>
                             <dd>
@@ -105,7 +96,6 @@
                                   <% } %>
                             </dd>
                           </div>
-                          <% } %>
                     </dl>
                   </header>
                   <details class="card-subscription-accordion" <%=card.subscriptions && card.subscriptions.length ? ''
@@ -200,11 +190,13 @@
                             <option value="<%= card.id %>">
                               <%= card.cardName %>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits || '----' %>）
                             </option>
-                          <% }); %>
+                            <% }); %>
                         </select>
                         <div class="warning-list__actions">
                           <button type="submit" class="btn btn-small btn-solid">紐づけ</button>
-                          <button type="submit" formaction="/card/subscription/<%= sub.id %>/delete" class="btn btn-small btn-danger" onclick="return confirm('このサブスクリプションを削除しますか？');">削除</button>
+                          <button type="submit" formaction="/card/subscription/<%= sub.id %>/delete"
+                            class="btn btn-small btn-danger"
+                            onclick="return confirm('このサブスクリプションを削除しますか？');">削除</button>
                         </div>
                       </div>
                     </form>

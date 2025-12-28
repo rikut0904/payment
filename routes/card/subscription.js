@@ -18,7 +18,7 @@ var {
   startOfDay,
 } = require('./utils');
 var { computeNextPaymentDate } = require('./payments');
-var { setFlashMessage } = require('./flash');
+var { setFlashMessage } = require('./message');
 var { validateSubscriptionPayload } = require('./validators');
 var {
   asyncHandler,
