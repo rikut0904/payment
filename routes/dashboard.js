@@ -22,6 +22,24 @@ function toJpyAmount(payment, exchangeRates) {
   return converted === null ? 0 : converted;
 }
 
+function correctSummarizeMonthlyTotals(payments, exchangeRates) {
+  const summaryMap = new Map();
+  payments.forEach((payment) => {
+    const existing = summaryMap.get(payment.monthKey) || {
+      monthKey: payment.monthKey,
+      monthLabel: payment.monthLabel,
+      totalAmount: 0,
+    };
+    existing.totalAmount += toJpyAmount(payment, exchangeRates);
+    summaryMap.set(payment.monthKey, existing);
+  });
+  const totals = Array.from(summaryMap.values());
+  totals.forEach((item) => {
+    item.formattedTotal = formatCurrency(item.totalAmount, 'JPY');
+  });
+  return totals.sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+}
+
 /* GET dashboard page. */
 router.get(
   '/',
@@ -46,7 +64,7 @@ router.get(
       startDateLimit: monthStart,
       monthsLimit: 1,
     });
-    const monthlyTotalsRaw = summarizeMonthlyTotals(summaryPayments, exchangeRates);
+    const monthlyTotalsRaw = correctSummarizeMonthlyTotals(summaryPayments, exchangeRates);
     const upcomingPaymentMonths = buildUpcomingPaymentMonths(summaryPayments, 1);
     const currentMonthKey = upcomingPaymentMonths[0]?.monthKey;
     const monthlyTotal = monthlyTotalsRaw.find((item) => item.monthKey === currentMonthKey) || {
@@ -97,7 +115,7 @@ router.get(
       startDateLimit: historyMonths[0].date,
       monthsLimit: 5,
     });
-    const historyTotalsRaw = summarizeMonthlyTotals(historyPayments, exchangeRates);
+    const historyTotalsRaw = correctSummarizeMonthlyTotals(historyPayments, exchangeRates);
     const historyTotals = historyMonths.map((month) => {
       const matched = historyTotalsRaw.find((item) => item.monthKey === month.monthKey);
       if (matched) {
