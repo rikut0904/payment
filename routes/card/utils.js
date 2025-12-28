@@ -1,23 +1,5 @@
 const { SUPPORTED_CURRENCIES } = require('./constants');
-
-function parseBillingDay(value) {
-  if (value === undefined || value === null || value === '') {
-    return null;
-  }
-  const parsed = parseInt(value, 10);
-  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 31) {
-    return null;
-  }
-  return parsed;
-}
-
-function parseAmount(value) {
-  const parsed = parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return null;
-  }
-  return parsed;
-}
+const { parseAmount, parseBillingDay } = require('../../lib/numberUtils');
 
 function formatDayDisplay(value) {
   const numeric = Number(value);
