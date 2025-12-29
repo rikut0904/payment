@@ -15,7 +15,7 @@
     <header class="app-header app-header--public">
       <div class="app-header__bar">
         <div class="app-header__brand">
-          <a href="/" class="app-header__brand-link"><%= projectName || 'Payment' %></a>
+          <a href="/" class="app-header__brand-link"><%= projectName %></a>
         </div>
         <nav class="header-nav header-nav--desktop" aria-label="メインナビゲーション">
           <ul>
@@ -45,14 +45,14 @@
     </div>
     <div class="content">
       <section class="card">
-        <% const statusCode = error && error.status ? error.status : 500; %>
+        <% const statusCode = typeof status === 'number' ? status : 500; %>
         <% const isNotFound = statusCode === 404; %>
         <h2><%= isNotFound ? 'ページが見つかりません' : 'エラーが発生しました' %></h2>
         <p>
           <%= isNotFound ? '指定されたページは存在しないか、移動された可能性があります。' : '時間をおいて再度お試しください。' %>
         </p>
         <p class="muted">エラーコード: <%= statusCode %></p>
-        <% if (!isNotFound && message) { %>
+        <% if (!isNotFound && error && error.stack && message) { %>
           <p class="muted"><%= message %></p>
         <% } %>
         <div class="actions">
@@ -61,7 +61,7 @@
       </section>
     </div>
     <footer>
-      <p>&copy; 2025 <%= projectName || 'Payment' %>. All rights reserved.</p>
+      <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
     </footer>
   </div>
   <script type="module" src="/javascripts/header.js" defer></script>
