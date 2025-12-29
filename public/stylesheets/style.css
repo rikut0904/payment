@@ -1176,6 +1176,33 @@ footer {
   overflow-wrap: break-word;
 }
 
+.intro-hero {
+  margin: 16px 0 24px;
+}
+
+.intro-hero__image {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.feature-image {
+  width: 100%;
+  height: 280px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .feature-image {
+    height: 240px;
+  }
+}
+
 .warning {
   border: 1px solid rgba(220, 38, 38, 0.3);
 }
