@@ -22,11 +22,12 @@ const positionMenu = (menu) => {
   const summaryRect = summary.getBoundingClientRect();
   const listRect = list.getBoundingClientRect();
   const padding = 16;
+  const MENU_OFFSET = 8;
   const maxLeft = window.innerWidth - listRect.width - padding;
   const centeredLeft = (window.innerWidth - listRect.width) / 2;
   const left = Math.max(padding, Math.min(maxLeft, centeredLeft));
   const maxTop = window.innerHeight - listRect.height - padding;
-  const top = Math.min(maxTop, summaryRect.bottom + 8);
+  const top = Math.min(maxTop, summaryRect.bottom + MENU_OFFSET);
 
   list.style.position = 'fixed';
   list.style.left = `${left}px`;
