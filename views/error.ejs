@@ -1,3 +1,70 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>エラー</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+  <div class="layout">
+    <header class="app-header app-header--public">
+      <div class="app-header__bar">
+        <div class="app-header__brand">
+          <a href="/" class="app-header__brand-link"><%= projectName || 'Payment' %></a>
+        </div>
+        <nav class="header-nav header-nav--desktop" aria-label="メインナビゲーション">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/login">ログイン</a></li>
+            <li><a href="/signin">アカウント作成</a></li>
+          </ul>
+        </nav>
+        <button type="button" class="header-menu-toggle" aria-label="メニューを開く" aria-controls="headerDrawerPublic"
+          aria-expanded="false">
+          <span class="material-icons" aria-hidden="true">menu</span>
+        </button>
+      </div>
+    </header>
+    <div id="headerDrawerPublic" class="header-drawer" aria-hidden="true">
+      <button type="button" class="header-drawer__overlay" aria-label="メニューを閉じる"></button>
+      <div class="header-drawer__panel" role="dialog" aria-modal="true" aria-label="メインメニュー">
+        <button type="button" class="header-menu-close" aria-label="メニューを閉じる">×</button>
+        <nav class="header-nav header-nav--drawer" aria-label="メインナビゲーション">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/login">ログイン</a></li>
+            <li><a href="/signin">アカウント作成</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <div class="content">
+      <section class="card">
+        <% const statusCode = error && error.status ? error.status : 500; %>
+        <% const isNotFound = statusCode === 404; %>
+        <h2><%= isNotFound ? 'ページが見つかりません' : 'エラーが発生しました' %></h2>
+        <p>
+          <%= isNotFound ? '指定されたページは存在しないか、移動された可能性があります。' : '時間をおいて再度お試しください。' %>
+        </p>
+        <p class="muted">エラーコード: <%= statusCode %></p>
+        <% if (!isNotFound && message) { %>
+          <p class="muted"><%= message %></p>
+        <% } %>
+        <div class="actions">
+          <a href="/" class="btn">ホームに戻る</a>
+        </div>
+      </section>
+    </div>
+    <footer>
+      <p>&copy; 2025 <%= projectName || 'Payment' %>. All rights reserved.</p>
+    </footer>
+  </div>
+  <script type="module" src="/javascripts/header.js" defer></script>
+</body>
+
+</html>
