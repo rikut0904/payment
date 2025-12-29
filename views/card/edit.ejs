@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -16,7 +17,6 @@
     <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
-          <h2>カードを編集</h2>
           <% if (errorMessage) { %>
             <div class="alert alert-error">
               <%= errorMessage %>

@@ -11,8 +11,7 @@ const auth = app ? getAuth(app) : null;
 const bodyDataset = document.body ? document.body.dataset : {};
 const skipAuthRedirect = !!(bodyDataset && bodyDataset.skipAuthRedirect === 'true');
 
-const logoutBtn = document.querySelector('#logoutBtn');
-if (logoutBtn) {
+document.querySelectorAll('.logout-btn').forEach((logoutBtn) => {
   logoutBtn.addEventListener('click', async () => {
     try {
       if (auth && auth.currentUser) {
@@ -25,7 +24,7 @@ if (logoutBtn) {
       alert('ログアウトに失敗しました。時間をおいて再度お試しください。');
     }
   });
-}
+});
 
 function setError(message) {
   const el = document.getElementById('loginError');

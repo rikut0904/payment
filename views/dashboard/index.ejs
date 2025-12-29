@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -62,23 +63,25 @@
               </header>
               <div class="card-panel__body">
                 <% const maxTotal = Number(historyMaxTotal) || 0; %>
-                <div class="bar-chart">
-                  <% (historyTotals || []).forEach(function(item) { %>
-                    <% const totalAmount = Number(item.totalAmount) || 0; %>
-                    <% const rawPercent = maxTotal ? Math.round((totalAmount / maxTotal) * 100) : 0; %>
-                    <% const heightValue = Number.isFinite(rawPercent) ? Math.max(4, rawPercent) : 4; %>
-                    <div class="bar-chart__item">
-                      <div class="bar-chart__bar-wrap">
-                        <div class="bar-chart__bar" data-height="<%= heightValue %>"></div>
+                <div class="chart-wrapper">
+                  <div class="bar-chart">
+                    <% (historyTotals || []).forEach(function(item) { %>
+                      <% const totalAmount = Number(item.totalAmount) || 0; %>
+                      <% const rawPercent = maxTotal ? Math.round((totalAmount / maxTotal) * 100) : 0; %>
+                      <% const heightValue = Number.isFinite(rawPercent) ? Math.max(4, rawPercent) : 4; %>
+                      <div class="bar-chart__item">
+                        <div class="bar-chart__bar-wrap">
+                          <div class="bar-chart__bar" data-height="<%= heightValue %>"></div>
+                        </div>
+                        <div class="bar-chart__label">
+                          <%= item.monthLabel %>
+                        </div>
+                        <div class="bar-chart__value">
+                          <%= item.formattedTotal %>
+                        </div>
                       </div>
-                      <div class="bar-chart__label">
-                        <%= item.monthLabel %>
-                      </div>
-                      <div class="bar-chart__value">
-                        <%= item.formattedTotal %>
-                      </div>
-                    </div>
-                  <% }); %>
+                    <% }); %>
+                  </div>
                 </div>
               </div>
             </article>

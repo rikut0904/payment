@@ -40,6 +40,8 @@
         const prevBtn = document.querySelector('[data-payment-prev]');
         const nextBtn = document.querySelector('[data-payment-next]');
         const tabs = Array.from(document.querySelectorAll('[data-payment-index]'));
+        const currentLabel = document.querySelector('[data-payment-current]');
+        const summaries = Array.from(document.querySelectorAll('[data-month-summary]'));
         let activeIndex = 0;
         const clampIndex = (index) => Math.max(0, Math.min(index, panels.length - 1));
         function updateView() {
@@ -56,6 +58,17 @@
             }
             if (nextBtn) {
                 nextBtn.disabled = activeIndex === panels.length - 1;
+            }
+            if (currentLabel) {
+                const label = panels[activeIndex]?.dataset?.monthLabel || '';
+                currentLabel.textContent = label;
+            }
+            if (summaries.length) {
+                const activeKey = panels[activeIndex]?.dataset?.monthKey;
+                summaries.forEach((item) => {
+                    const matches = item.dataset.monthKey === activeKey;
+                    item.style.display = matches ? '' : 'none';
+                });
             }
         }
         function setActive(index) {

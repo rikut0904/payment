@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -101,7 +102,7 @@
                   <details class="card-subscription-accordion" <%=card.subscriptions && card.subscriptions.length ? ''
                     : 'open' %>>
                     <summary>
-                      <span>紐づくサブスクリプション</span>
+                      <span>サブスクリプション</span>
                       <% if (card.subscriptions && card.subscriptions.length) { %>
                         <span class="badge badge-light">
                           <%= card.subscriptions.length %>件
@@ -155,7 +156,7 @@
                           </table>
                         </div>
                         <% } else { %>
-                          <p class="muted">このカードに紐づくサブスクリプションはまだありません。</p>
+                          <p class="muted">このカードにサブスクリプションはまだありません。</p>
                           <% } %>
                     </div>
                   </details>
@@ -169,7 +170,7 @@
 
         <% if (unlinkedSubscriptions && unlinkedSubscriptions.length) { %>
           <section class="card warning">
-            <h3>カード未紐付けのサブスクリプション</h3>
+            <h3>カード未紐づけのサブスクリプション</h3>
             <p>カードが削除された、または未登録の状態で作成されたサブスクリプションが存在します。カードを選択して再紐づけしてください。</p>
             <ul class="warning-list warning-list--interactive">
               <% unlinkedSubscriptions.forEach(function(sub) { %>
@@ -212,9 +213,9 @@
             <section class="card">
               <h3>支払い予定</h3>
               <% if (monthlyTotals && monthlyTotals.length) { %>
-                <div class="summary-grid">
+                <div class="summary-grid" data-month-summaries>
                   <% monthlyTotals.forEach(function(month) { %>
-                    <div class="summary-item">
+                    <div class="summary-item" data-month-summary data-month-key="<%= month.monthKey %>">
                       <span class="summary-label">
                         <%= month.monthLabel %>
                       </span>
@@ -231,6 +232,7 @@
                         <%=upcomingPaymentMonths.length===1 ? 'disabled' : '' %>>
                         ‹
                       </button>
+                      <span class="payment-month-current" data-payment-current aria-live="polite"></span>
                       <div class="payment-month-tabs" data-payment-tabs>
                         <% upcomingPaymentMonths.forEach(function(month, index) { %>
                           <button type="button" class="payment-month-tab <%= index === 0 ? 'is-active' : '' %>"
@@ -247,7 +249,8 @@
                     <div class="payment-month-panels" data-payment-panels>
                       <% upcomingPaymentMonths.forEach(function(month, index) { %>
                         <div class="payment-month-panel <%= index === 0 ? 'is-active' : '' %>"
-                          data-payment-panel="<%= index %>" data-month-label="<%= month.monthLabel %>">
+                          data-payment-panel="<%= index %>" data-month-label="<%= month.monthLabel %>"
+                          data-month-key="<%= month.monthKey %>">
                           <div class="card-panel__meta payment-groups">
                             <details class="payment-group" open>
                               <summary>
@@ -260,7 +263,7 @@
                               </summary>
                               <div class="payment-group__body">
                                 <% if (month.creditPayments && month.creditPayments.length) { %>
-                                  <div class="table-wrapper">
+                                  <div class="table-wrapper table-wrapper--compact">
                                     <table class="table">
                                       <thead>
                                         <tr>
@@ -306,7 +309,7 @@
                               </summary>
                               <div class="payment-group__body">
                                 <% if (month.debitPayments && month.debitPayments.length) { %>
-                                  <div class="table-wrapper">
+                                  <div class="table-wrapper table-wrapper--compact">
                                     <table class="table">
                                       <thead>
                                         <tr>

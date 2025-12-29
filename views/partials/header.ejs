@@ -3,7 +3,7 @@
     <div class="app-header__brand">
       <a href="/dashboard" class="app-header__brand-link"><%= projectName || 'Payment' %></a>
     </div>
-    <nav class="header-nav" aria-label="メインナビゲーション">
+    <nav class="header-nav header-nav--desktop" aria-label="メインナビゲーション">
       <ul>
         <li><a href="/dashboard">ダッシュボード</a></li>
         <li><a href="/card">支払情報管理</a></li>
@@ -12,14 +12,41 @@
         <li><a href="/setting">設定</a></li>
       </ul>
     </nav>
-    <div class="header-actions">
+    <div class="header-actions header-actions--desktop">
       <% if (userName) { %>
         <span class="user-chip"><%= userName %> さん</span>
       <% } %>
-      <button id="logoutBtn" type="button" class="logout-btn">ログアウト</button>
+      <button type="button" class="logout-btn">ログアウト</button>
     </div>
+    <button type="button" class="header-menu-toggle" aria-label="メニューを開く" aria-controls="headerDrawer"
+      aria-expanded="false">
+      <span class="material-icons" aria-hidden="true">menu</span>
+    </button>
   </div>
   <div class="header-title">
     <h1><%= title %></h1>
   </div>
 </header>
+<div id="headerDrawer" class="header-drawer" aria-hidden="true">
+  <button type="button" class="header-drawer__overlay" aria-label="メニューを閉じる"></button>
+  <div class="header-drawer__panel" role="dialog" aria-modal="true" aria-label="メインメニュー">
+    <button type="button" class="header-menu-close" aria-label="メニューを閉じる">×</button>
+    <nav class="header-nav header-nav--drawer" aria-label="メインナビゲーション">
+      <ul>
+        <li><a href="/dashboard">ダッシュボード</a></li>
+        <li><a href="/card">支払情報管理</a></li>
+        <li><a href="/like">みんなのおすすめ</a></li>
+        <li><a href="/like/me">自分のおすすめ</a></li>
+        <li><a href="/setting">設定</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions header-actions--drawer">
+      <% if (userName) { %>
+        <span class="user-chip"><%= userName %> さん</span>
+      <% } %>
+      <button type="button" class="logout-btn">ログアウト</button>
+    </div>
+  </div>
+</div>
+<script type="module" src="/javascripts/header.js" defer></script>
+<script type="module" src="/javascripts/card-menu.js" defer></script>
