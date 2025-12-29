@@ -194,6 +194,7 @@ app.use(function (err, req, res, next) {
   // ローカル変数を設定（開発時のみ詳細）
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.status = err.status || 500;
   res.locals.projectName = res.locals.projectName || 'Payment';
   console.error('Unhandled error:', err);
 
