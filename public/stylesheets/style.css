@@ -815,6 +815,7 @@ footer {
 
 .btn.btn-outline:hover {
   background: rgba(var(--accent-rgb), 0.08);
+  color: var(--accent);
 }
 
 .card-panel__body.card-panel__actions {
