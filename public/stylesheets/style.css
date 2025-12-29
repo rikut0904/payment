@@ -1173,8 +1173,7 @@ footer {
 }
 
 .wrap-url {
-  word-break: break-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .warning {
