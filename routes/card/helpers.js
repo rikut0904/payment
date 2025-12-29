@@ -3,12 +3,14 @@ var { CARD_TYPE_LABELS, CARD_TYPE_OPTIONS, SUPPORTED_CARD_BRANDS, SUPPORTED_CURR
 var { normalizeCardType } = require('./utils');
 
 function asyncHandler(handler) {
+  // 非同期ハンドラのエラーをExpressへ渡す。
   return function (req, res, next) {
     Promise.resolve(handler(req, res, next)).catch(next);
   };
 }
 
 function resolveRedirect(target, fallback) {
+  // アプリ内の安全なリダイレクトのみ許可する。
   if (typeof target !== 'string') {
     return fallback;
   }
@@ -19,6 +21,7 @@ function resolveRedirect(target, fallback) {
 }
 
 function renderAddCardPage(req, res, { errorMessage = '', formValues = {}, statusCode = 200 } = {}) {
+  // カード追加フォームを描画する。
   res.status(statusCode).render('card/add', {
     title: 'カードを登録',
     projectName: 'Payment',
@@ -31,6 +34,7 @@ function renderAddCardPage(req, res, { errorMessage = '', formValues = {}, statu
 }
 
 function renderEditCardPage(req, res, { errorMessage = '', formValues = {}, statusCode = 200 } = {}) {
+  // カード編集フォームを描画する。
   res.status(statusCode).render('card/edit', {
     title: 'カードを編集',
     projectName: 'Payment',
@@ -59,6 +63,7 @@ function renderSubscriptionFormPage(
     redirectPath = '',
   } = {}
 ) {
+  // サブスク追加/編集フォームを描画する。
   const heading = formTitle || (isEdit ? 'サブスクリプションを編集' : 'サブスクリプションを追加');
   const description =
     formDescription ||
@@ -81,6 +86,7 @@ function renderSubscriptionFormPage(
 }
 
 async function fetchUserCardsWithMeta(userId) {
+  // カード一覧に表示用ラベルを付与する。
   const cards = await listCardsByUser(userId);
   return cards.map((card) =>
     Object.assign({}, card, {

@@ -54,12 +54,12 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// Force re-login when the session has exceeded our short-lived window.
+// セッション期限を超えた場合は再ログインを促す。
 const requireAuth = (req, res, next) => {
   const user = req.session?.user;
   if (!user) return res.redirect('/');
   const loginAt = user.loginAt;
-  // Destroy stale session and show timeout notice.
+  // 期限切れセッションを破棄してタイムアウトを通知する。
   if (!loginAt || Date.now() - loginAt > SESSION_TIME_MS) {
     req.clearSession();
     res.redirect('/login?timeout=1');
@@ -68,7 +68,7 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// view engine setup
+// テンプレートエンジン設定
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -78,12 +78,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 function encodeSession(data) {
+  // セッション情報をエンコードしてHMAC署名する。
   const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
   const signature = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('base64url');
   return `${payload}.${signature}`;
 }
 
 function decodeSession(token) {
+  // HMAC署名を検証してセッション情報を復元する。
   if (!token) return null;
   const [payload, signature] = token.split('.');
   if (!payload || !signature) return null;
@@ -101,6 +103,7 @@ function decodeSession(token) {
 }
 
 function setSession(res, data) {
+  // 署名済みセッションCookieを設定する。
   const token = encodeSession(data);
   res.cookie(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
@@ -111,10 +114,12 @@ function setSession(res, data) {
 }
 
 function clearSession(res) {
+  // セッションCookieを削除する。
   res.clearCookie(SESSION_COOKIE_NAME);
 }
 
 app.use((req, res, next) => {
+  // リクエストにセッション情報とヘルパーを付与する。
   const sessionData = decodeSession(req.cookies?.[SESSION_COOKIE_NAME]);
   req.session = sessionData;
   req.saveSession = (data) => {
@@ -129,12 +134,14 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
+  // テンプレートにユーザー名を公開する。
   res.locals.userName = req.session?.user?.name || req.session?.user?.email || 'No-Name';
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/session', async (req, res) => {
+  // Firebase IDトークンをセッションCookieに変換する。
   if (!admin.apps.length) {
     return res.status(500).json({ error: 'auth not configured' });
   }
@@ -161,6 +168,7 @@ app.post('/session', async (req, res) => {
 });
 
 function handleLogout(req, res) {
+  // ログアウト時にセッションを破棄する。
   req.clearSession();
   res.sendStatus(204);
 }
@@ -176,18 +184,18 @@ app.use('/setting', requireAuth, settingRouter);
 app.use('/login', loginRouter);
 app.use('/signin', signinRouter);
 
-// catch 404 and forward to error handler
+// 404を捕捉してエラーハンドラへ渡す。
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
-// error handler
+// エラーハンドラ
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
+  // ローカル変数を設定（開発時のみ詳細）
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
+  // エラーページを描画する。
   res.status(err.status || 500);
   res.render('error');
 });

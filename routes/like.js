@@ -34,22 +34,26 @@ const DEFAULT_VISIBLE_DAYS = 7;
 const LIKE_VISIBLE_DURATION_MS = getVisibleDurationMs();
 
 function asyncHandler(handler) {
+  // 非同期ハンドラのエラーをExpressへ渡す。
   return function (req, res, next) {
     Promise.resolve(handler(req, res, next)).catch(next);
   };
 }
 
 function wantsJsonResponse(req) {
+  // JSON応答を期待しているか判定する。
   const accepts = req.headers.accept || '';
   return req.xhr || accepts.includes('application/json');
 }
 
 function isOwner(req, entry) {
+  // 対象データの所有者か確認する。
   const sessionUid = req.session?.user?.uid;
   return Boolean(entry && entry.userId && sessionUid && entry.userId === sessionUid);
 }
 
 function respondForbidden(req, res, message) {
+  // 403をJSONかHTMLで返す。
   const msg = message || 'このおすすめを操作する権限がありません。';
   if (wantsJsonResponse(req)) {
     return res.status(403).json({ success: false, error: msg });
@@ -58,6 +62,7 @@ function respondForbidden(req, res, message) {
 }
 
 function extractLikeData(body) {
+  // Likeフォームの入力を検証・正規化する。
   const { date, title, contentText, url, image, category } = body || {};
   if (!date || !title) {
     return { error: '必須項目が未入力です。' };
@@ -86,14 +91,17 @@ function extractLikeData(body) {
 }
 
 function normalizeSortField(sortField) {
+  // ソート対象を許可リストに正規化する。
   return LIKE_SORT_VALUE_SET.has(sortField) ? sortField : DEFAULT_SORT_FIELD;
 }
 
 function normalizeSortOrder(order) {
+  // ソート順を許可リストに正規化する。
   return SORT_ORDER_VALUE_SET.has(order) ? order : DEFAULT_SORT_ORDER;
 }
 
 function getVisibleDurationMs() {
+  // 表示期間を環境変数の優先順で決める。
   const envMinutes = parseFloat(process.env.LIKE_VISIBLE_MINUTES || '');
   if (Number.isFinite(envMinutes) && envMinutes > 0) {
     return envMinutes * 60 * 1000;
@@ -108,6 +116,7 @@ function getVisibleDurationMs() {
 }
 
 function getTimestampDate(value) {
+  // Timestamp/Date系をDateに変換する。
   if (!value) {
     return null;
   }
@@ -127,6 +136,7 @@ function getTimestampDate(value) {
 }
 
 function formatTimestampForDisplay(value) {
+  // 日時を日本語表示に整形する。
   const date = getTimestampDate(value);
   if (!date) {
     return '';
@@ -135,10 +145,12 @@ function formatTimestampForDisplay(value) {
 }
 
 function shouldUseFirestorePagination(sortField, hasTitleFilter) {
+  // Firestore側ページングが使える条件か判定する。
   return sortField === DEFAULT_SORT_FIELD && !hasTitleFilter;
 }
 
 function getComparableValue(entry, field) {
+  // 安定ソート用の比較値を作る。
   if (!entry) {
     return '';
   }
@@ -167,6 +179,7 @@ function getComparableValue(entry, field) {
 }
 
 function sortEntriesInMemory(entries, field, order) {
+  // メモリ内で安定ソートする。
   const direction = order === 'asc' ? 1 : -1;
   return entries
     .slice()
@@ -186,6 +199,7 @@ function sortEntriesInMemory(entries, field, order) {
 }
 
 function buildQueryString(params) {
+  // 空でないパラメータからクエリを生成する。
   return Object.entries(params)
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
@@ -193,6 +207,7 @@ function buildQueryString(params) {
 }
 
 function resolveRedirectPath(value, fallback = '/like') {
+  // アプリ内の安全なリダイレクトだけ許可する。
   if (typeof value !== 'string') {
     return fallback;
   }
@@ -206,7 +221,7 @@ function resolveRedirectPath(value, fallback = '/like') {
   return trimmed;
 }
 
-/* GET like page. */
+// みんなのおすすめ一覧を表示する。
 router.get(
   '/',
   asyncHandler(async function (req, res) {
@@ -418,6 +433,7 @@ router.get(
   })
 );
 
+// おすすめ追加フォームを表示する。
 router.get('/add', function (req, res) {
   const redirectPath = resolveRedirectPath(req.query.redirect, '/like');
   res.render('like/add', {
@@ -549,6 +565,7 @@ router.get(
   })
 );
 
+// 旧URL互換: /like/:id を詳細へリダイレクトする。
 router.get('/:id', function (req, res) {
   res.redirect(`/like/detail/${req.params.id}`);
 });

@@ -6,6 +6,7 @@ var { fetchWithTimeout, isTimeoutError } = require('../lib/httpClient');
 var redirectIfAuthenticated = require('./middleware/redirectIfAuthenticated');
 
 function mapLoginErrorMessage(code) {
+  // Firebase Authエラーコードを表示文言に変換する。
   switch (code) {
     case 'EMAIL_NOT_FOUND':
     case 'INVALID_PASSWORD':
@@ -21,6 +22,7 @@ function mapLoginErrorMessage(code) {
 }
 
 function renderLogin(req, res, options = {}) {
+  // ログイン画面を描画する。
   const baseOptions = {
     title: 'ログイン',
     projectName: 'Payment',
@@ -35,10 +37,12 @@ function renderLogin(req, res, options = {}) {
   res.status(statusCode).render('login', Object.assign(baseOptions, options));
 }
 
+// ログインフォームを表示する。
 router.get('/', redirectIfAuthenticated, function (req, res) {
   renderLogin(req, res);
 });
 
+// Firebase Authで認証しセッションを作成する。
 router.post('/', redirectIfAuthenticated, async function (req, res) {
   const { email, password } = req.body || {};
   if (!email || !password) {

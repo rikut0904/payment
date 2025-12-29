@@ -10,6 +10,7 @@ const {
 } = require('./utils');
 
 function addCycle(date, cycle) {
+  // 月次/年次の次回日付を計算する。
   if (!(date instanceof Date)) {
     return null;
   }
@@ -23,6 +24,7 @@ function addCycle(date, cycle) {
 }
 
 function resolvePaymentDay(card) {
+  // カードから支払日を取り出す。
   const rawDay = card?.paymentDay;
   const numeric = Number(rawDay);
   if (!Number.isFinite(numeric) || numeric < 1 || numeric > 31) {
@@ -32,6 +34,7 @@ function resolvePaymentDay(card) {
 }
 
 function alignDateToPaymentDay(date, paymentDay) {
+  // 次回の支払日に合わせて日付を調整する。
   if (!(date instanceof Date)) {
     return null;
   }
@@ -48,6 +51,7 @@ function alignDateToPaymentDay(date, paymentDay) {
 }
 
 function addCycleWithPaymentDay(date, cycle, paymentDay) {
+  // 支払日を維持して次回日付を算出する。
   if (!(date instanceof Date)) {
     return null;
   }
@@ -59,6 +63,7 @@ function addCycleWithPaymentDay(date, cycle, paymentDay) {
 }
 
 function computeNextPaymentDate(subscription, card, referenceDate) {
+  // 基準日以降の次回支払日を計算する。
   const startDate = parseDateInput(subscription.paymentStartDate);
   if (!startDate) {
     return null;
@@ -88,6 +93,7 @@ function computeNextPaymentDate(subscription, card, referenceDate) {
 }
 
 function calculateUpcomingPayments(subscriptions, cardMap, options = {}) {
+  // 期間内の支払予定一覧を作る。
   const baseStart = options.startDateLimit ? startOfDay(options.startDateLimit) : startOfDay(new Date());
   const monthsLimit = Number.isFinite(options.monthsLimit) ? options.monthsLimit : UPCOMING_MONTHS;
   const horizon = new Date(baseStart.getFullYear(), baseStart.getMonth() + monthsLimit, 0);
@@ -159,6 +165,7 @@ function calculateUpcomingPayments(subscriptions, cardMap, options = {}) {
 }
 
 function summarizeMonthlyTotals(upcomingPayments, exchangeRates) {
+  // 月別合計を作る（旧換算ロジック）。
   const summaryMap = new Map();
   upcomingPayments.forEach((payment) => {
     const existing = summaryMap.get(payment.monthKey) || {
@@ -189,6 +196,7 @@ function summarizeMonthlyTotals(upcomingPayments, exchangeRates) {
 }
 
 function buildUpcomingPaymentMonths(payments, limit = UPCOMING_MONTHS) {
+  // 月ごとの支払リストを作る。
   const today = startOfDay(new Date());
   const months = [];
   for (let i = 0; i < limit; i += 1) {
@@ -217,6 +225,7 @@ function buildUpcomingPaymentMonths(payments, limit = UPCOMING_MONTHS) {
 }
 
 function groupSubscriptionsByCard(subscriptions) {
+  // カードごとにサブスクをまとめる。
   const grouped = new Map();
   subscriptions.forEach((subscription) => {
     const bucket = grouped.get(subscription.cardId) || [];

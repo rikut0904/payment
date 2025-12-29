@@ -1,45 +1,31 @@
-(function () {
+(() => {
+  // モバイルメニューに必要な要素を取得する。
   const header = document.querySelector('.app-header');
-  if (!header) {
-    return;
-  }
-  const toggleBtn = header.querySelector('.header-menu-toggle');
-  const drawer = document.querySelector('.header-drawer');
-  const overlay = drawer ? drawer.querySelector('.header-drawer__overlay') : null;
-  const closeBtn = drawer ? drawer.querySelector('.header-menu-close') : null;
-  if (!toggleBtn || !drawer || !overlay || !closeBtn) {
+  const drawer = document.getElementById('headerDrawer');
+  const openButton = document.querySelector('.header-menu-toggle');
+  const overlay = drawer?.querySelector('.header-drawer__overlay');
+  const closeButton = drawer?.querySelector('.header-menu-close');
+
+  if (!header || !drawer || !openButton || !overlay || !closeButton) {
     return;
   }
 
-  const setExpanded = (expanded) => {
-    toggleBtn.setAttribute('aria-expanded', String(expanded));
-    header.classList.toggle('is-menu-open', expanded);
-    drawer.setAttribute('aria-hidden', String(!expanded));
-    document.body.classList.toggle('is-menu-open', expanded);
+  // ドロワーの表示/非表示とaria属性を切り替える。
+  const setOpen = (isOpen) => {
+    header.classList.toggle('is-menu-open', isOpen);
+    document.body.classList.toggle('is-menu-open', isOpen);
+    openButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    drawer.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
   };
 
-  toggleBtn.addEventListener('click', () => {
-    const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-    setExpanded(!expanded);
-  });
+  openButton.addEventListener('click', () => setOpen(true));
+  overlay.addEventListener('click', () => setOpen(false));
+  closeButton.addEventListener('click', () => setOpen(false));
 
-  overlay.addEventListener('click', () => {
-    setExpanded(false);
-  });
-
-  closeBtn.addEventListener('click', () => {
-    setExpanded(false);
-  });
-
-  drawer.addEventListener('click', (event) => {
-    if (event.target && event.target.closest('a')) {
-      setExpanded(false);
-    }
-  });
-
-  document.addEventListener('keydown', (event) => {
+  // Escキーでドロワーを閉じる。
+  window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      setExpanded(false);
+      setOpen(false);
     }
   });
 })();

@@ -1,3 +1,4 @@
+// カード関連の定数（ブランド/ラベル/上限/フラッシュ）。
 const SUPPORTED_CARD_BRANDS = ['VISA', 'Mastercard', 'JCB', 'American Express', 'その他'];
 const SUPPORTED_CURRENCIES = ['JPY', 'USD'];
 const CARD_TYPE_OPTIONS = [

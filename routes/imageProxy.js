@@ -6,12 +6,14 @@ var router = express.Router();
 var { fetchWithTimeout, isTimeoutError } = require('../lib/httpClient');
 
 function asyncHandler(handler) {
+  // 非同期ハンドラのエラーをExpressへ渡す。
   return function (req, res, next) {
     Promise.resolve(handler(req, res, next)).catch(next);
   };
 }
 
 function normalizeUrl(target) {
+  // URLを検証しhttp/httpsのみ許可する。
   if (!target) return null;
   try {
     const parsed = new URL(target);
@@ -27,6 +29,7 @@ function normalizeUrl(target) {
 router.get(
   '/',
   asyncHandler(async function (req, res) {
+    // 外部画像を取得してストリーム送信する。
     const normalizedUrl = normalizeUrl(req.query.url);
     if (!normalizedUrl) {
       return res.status(400).send('有効な画像URLを指定してください。');

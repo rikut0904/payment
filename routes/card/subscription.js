@@ -30,6 +30,7 @@ var {
 router.get(
   '/',
   asyncHandler(async function (req, res) {
+    // サブスク追加フォームを表示する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -55,6 +56,7 @@ router.get(
 router.post(
   '/',
   asyncHandler(async function (req, res) {
+    // 入力を検証してサブスクを作成する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -90,6 +92,7 @@ router.post(
 router.get(
   '/:id',
   asyncHandler(async function (req, res) {
+    // サブスク詳細を表示する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -137,6 +140,7 @@ router.get(
 router.get(
   '/:id/edit',
   asyncHandler(async function (req, res) {
+    // サブスク編集フォームを表示する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -180,6 +184,7 @@ router.get(
 router.post(
   '/:id/edit',
   asyncHandler(async function (req, res) {
+    // 入力を検証してサブスクを更新する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -201,6 +206,7 @@ router.post(
     const formAction = `/card/subscription/${subscriptionId}/edit`;
     const cancelUrl = safeRedirect || `/card/subscription/${subscriptionId}`;
     const successRedirect = safeRedirect || `/card/subscription/${subscriptionId}`;
+    // バリデーションエラー時の再描画。
     const renderError = (message, formValues) =>
       renderSubscriptionFormPage(req, res, {
         cards,
@@ -232,6 +238,7 @@ router.post(
 router.post(
   '/:id/relink',
   asyncHandler(async function (req, res) {
+    // サブスクの紐づけカードを変更する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -271,6 +278,7 @@ router.post(
 router.post(
   '/:id/delete',
   asyncHandler(async function (req, res) {
+    // サブスクを削除する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
