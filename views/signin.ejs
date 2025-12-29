@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         <%= title %>
     </title>
@@ -14,19 +15,41 @@
 <body>
     <div class="layout">
         <header class="app-header">
+            <div class="app-header__bar">
+                <div class="app-header__brand">
+                    <a href="/" class="app-header__brand-link"><%= projectName || 'Payment' %></a>
+                </div>
+                <nav class="header-nav header-nav--desktop" aria-label="メインナビゲーション">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/login">ログイン</a></li>
+                        <li><a href="/signin">アカウント作成</a></li>
+                    </ul>
+                </nav>
+                <button type="button" class="header-menu-toggle" aria-label="メニューを開く" aria-controls="headerDrawerPublic"
+                    aria-expanded="false">
+                    <span class="material-icons" aria-hidden="true">menu</span>
+                </button>
+            </div>
             <div class="header-title">
                 <h1>
                     <%= title %>
                 </h1>
             </div>
-            <nav class="header-nav">
-                <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/login">ログイン</a></li>
-                    <li><a href="/signin">アカウント作成</a></li>
-                </ul>
-            </nav>
         </header>
+        <div id="headerDrawerPublic" class="header-drawer" aria-hidden="true">
+            <button type="button" class="header-drawer__overlay" aria-label="メニューを閉じる"></button>
+            <div class="header-drawer__panel" role="dialog" aria-modal="true" aria-label="メインメニュー">
+                <button type="button" class="header-menu-close" aria-label="メニューを閉じる">×</button>
+                <nav class="header-nav header-nav--drawer" aria-label="メインナビゲーション">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/login">ログイン</a></li>
+                        <li><a href="/signin">アカウント作成</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
         <div class="content">
             <section class="card">
                 <h2>アカウント作成</h2>
@@ -49,6 +72,8 @@
             <p>&copy; 2025 <%= projectName %>. All rights reserved.</p>
         </footer>
     </div>
+    <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+    <script type="module" src="/javascripts/header.js" defer></script>
 </body>
 
 </html>

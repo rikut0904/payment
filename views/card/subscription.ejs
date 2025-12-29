@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>
     <%= title %>
   </title>
@@ -15,13 +16,7 @@
   <div class="layout">
     <%- include('../partials/header', { title }) %>
       <div class="content">
-        <section class="card">
-          <h2>
-            <%= formTitle || 'サブスクリプションを追加' %>
-          </h2>
-          <p>
-            <%= formDescription || '' %>
-          </p>
+        <section class="card card--subscription-form">
           <% if (errorMessage) { %>
             <div class="alert alert-error">
               <%= errorMessage %>
@@ -38,7 +33,7 @@
                         <% (cards || []).forEach(function(card) { %>
                           <option value="<%= card.id %>" data-card-type="<%= card.cardType %>" <%=(formValues.cardId
                             || '' )===card.id ? 'selected' : '' %>>
-                            <%= card.cardName %>（<%= card.cardTypeLabel %> / **** <%= card.last4Digits || '----' %>）
+                            <%= card.cardName %>（<%= card.cardTypeLabel %>）
                           </option>
                           <% }); %>
                       </select>
