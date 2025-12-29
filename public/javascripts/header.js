@@ -1,8 +1,9 @@
 (() => {
   // モバイルメニューに必要な要素を取得する。
   const header = document.querySelector('.app-header');
-  const drawer = document.getElementById('headerDrawer');
   const openButton = document.querySelector('.header-menu-toggle');
+  const drawerId = openButton?.getAttribute('aria-controls');
+  const drawer = drawerId ? document.getElementById(drawerId) : null;
   const overlay = drawer?.querySelector('.header-drawer__overlay');
   const closeButton = drawer?.querySelector('.header-menu-close');
 
