@@ -65,6 +65,9 @@ body {
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+  position: sticky;
+  top: 16px;
+  z-index: 40;
 }
 
 @media (prefers-color-scheme: dark) {
