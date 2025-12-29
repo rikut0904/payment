@@ -22,6 +22,7 @@ if (!admin.apps.length) {
 }
 
 async function deleteAllUsers() {
+  // Firebase Authのユーザーを一括削除する。
   let nextPageToken;
   let deletedCount = 0;
 

@@ -11,6 +11,7 @@ const auth = app ? getAuth(app) : null;
 const bodyDataset = document.body ? document.body.dataset : {};
 const skipAuthRedirect = !!(bodyDataset && bodyDataset.skipAuthRedirect === 'true');
 
+// ヘッダー/ドロワーのログアウト処理。
 document.querySelectorAll('.logout-btn').forEach((logoutBtn) => {
   logoutBtn.addEventListener('click', async () => {
     try {
@@ -27,12 +28,14 @@ document.querySelectorAll('.logout-btn').forEach((logoutBtn) => {
 });
 
 function setError(message) {
+  // ログインエラーを画面に表示する。
   const el = document.getElementById('loginError');
   if (el) {
     el.textContent = message || '';
   }
 }
 
+// ログイン時にセッション作成してダッシュボードへ遷移する。
 if (auth) {
   onAuthStateChanged(auth, async (user) => {
     if (!user) {

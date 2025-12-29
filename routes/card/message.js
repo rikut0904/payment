@@ -1,10 +1,12 @@
 const { FLASH_COOKIE_NAME, FLASH_TTL_MS } = require('./constants');
 
 function encodeFlashValue(payload) {
+  // フラッシュ内容をbase64urlに変換する。
   return Buffer.from(JSON.stringify(payload)).toString('base64url');
 }
 
 function decodeFlashValue(rawValue) {
+  // base64urlからフラッシュ内容を復元する。
   try {
     const json = Buffer.from(rawValue, 'base64url').toString('utf8');
     return JSON.parse(json);
@@ -14,6 +16,7 @@ function decodeFlashValue(rawValue) {
 }
 
 function setFlashMessage(res, type, message) {
+  // フラッシュメッセージをCookieに保存する。
   if (!message) {
     return;
   }
@@ -30,6 +33,7 @@ function setFlashMessage(res, type, message) {
 }
 
 function consumeFlashMessage(req, res) {
+  // フラッシュCookieを読み取り削除する。
   const raw = req.cookies?.[FLASH_COOKIE_NAME];
   if (!raw) {
     return null;

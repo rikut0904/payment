@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Module dependencies.
+ * 依存モジュール.
  */
 
 var app = require('../app');
@@ -9,20 +9,20 @@ var debug = require('debug')('payment:server');
 var http = require('http');
 
 /**
- * Get port from environment and store in Express.
+ * 環境変数からポートを取得してExpressへ設定する。
  */
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
- * Create HTTP server.
+ * HTTPサーバーを作成する。
  */
 
 var server = http.createServer(app);
 
 /**
- * Listen on provided port, on all network interfaces.
+ * 指定ポートで待ち受ける。
  */
 
 server.listen(port);
@@ -30,19 +30,20 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 /**
- * Normalize a port into a number, string, or false.
+ * ポート値を数値/文字列/falseに正規化する。
  */
 
 function normalizePort(val) {
+  // ポート文字列を数値または名前付きパイプに正規化する。
   var port = parseInt(val, 10);
 
   if (isNaN(port)) {
-    // named pipe
+    // 名前付きパイプ
     return val;
   }
 
   if (port >= 0) {
-    // port number
+    // ポート番号
     return port;
   }
 
@@ -50,10 +51,11 @@ function normalizePort(val) {
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * HTTPサーバーのerrorイベント処理.
  */
 
 function onError(error) {
+  // サーバ起動エラーをわかりやすく出力する。
   if (error.syscall !== 'listen') {
     throw error;
   }
@@ -62,7 +64,7 @@ function onError(error) {
     ? 'Pipe ' + port
     : 'Port ' + port;
 
-  // handle specific listen errors with friendly messages
+  // よくある起動エラーをわかりやすく表示する。
   switch (error.code) {
     case 'EACCES':
       console.error(bind + ' requires elevated privileges');
@@ -78,10 +80,11 @@ function onError(error) {
 }
 
 /**
- * Event listener for HTTP server "listening" event.
+ * HTTPサーバーのlisteningイベント処理.
  */
 
 function onListening() {
+  // サーバ起動をデバッグ出力する。
   var addr = server.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr

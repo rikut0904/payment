@@ -1,7 +1,9 @@
 (() => {
+  // メニュー要素とモバイル判定を取得する。
   const menus = document.querySelectorAll('.card-menu');
   const mobileQuery = window.matchMedia('(max-width: 600px)');
 
+  // メニュー位置のインライン指定をリセットする。
   const clearStyles = (list) => {
     list.style.position = '';
     list.style.left = '';
@@ -11,6 +13,7 @@
     list.style.maxWidth = '';
   };
 
+  // 画面内に収まるようにメニュー位置を調整する。
   const positionMenu = (menu) => {
     const list = menu.querySelector('.card-menu__list');
     const summary = menu.querySelector('summary');
@@ -38,6 +41,15 @@
     list.style.maxWidth = `${window.innerWidth - padding * 2}px`;
   };
 
+  // リサイズの連続処理を抑制する。
+  const debounce = (fn, delay) => {
+    let timerId;
+    return (...args) => {
+      window.clearTimeout(timerId);
+      timerId = window.setTimeout(() => fn(...args), delay);
+    };
+  };
+
   menus.forEach((menu) => {
     menu.addEventListener('toggle', () => {
       const list = menu.querySelector('.card-menu__list');
@@ -49,14 +61,6 @@
       requestAnimationFrame(() => positionMenu(menu));
     });
   });
-
-  const debounce = (fn, delay) => {
-    let timerId;
-    return (...args) => {
-      window.clearTimeout(timerId);
-      timerId = window.setTimeout(() => fn(...args), delay);
-    };
-  };
 
   const handleResize = debounce(() => {
     menus.forEach((menu) => {

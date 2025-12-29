@@ -5,6 +5,7 @@ var { createUserProfile } = require('../lib/firestoreUsers');
 var redirectIfAuthenticated = require('./middleware/redirectIfAuthenticated');
 
 function mapSignupErrorMessage(code) {
+  // Firebase Authエラーコードを表示文言に変換する。
   switch (code) {
     case 'auth/email-already-exists':
       return 'このメールアドレスは既に登録されています。';
@@ -18,6 +19,7 @@ function mapSignupErrorMessage(code) {
 }
 
 function renderSignin(req, res, options = {}) {
+  // サインアップ画面を描画する。
   res.render(
     'signin',
     {
@@ -31,10 +33,12 @@ function renderSignin(req, res, options = {}) {
   );
 }
 
+// サインアップフォームを表示する。
 router.get('/', redirectIfAuthenticated, function (req, res) {
   renderSignin(req, res);
 });
 
+// Firebase AuthとFirestoreにユーザーを作成する。
 router.post('/', redirectIfAuthenticated, async function (req, res) {
   const { name, email, password } = req.body || {};
   const trimmedName = (name || '').trim();

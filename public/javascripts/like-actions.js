@@ -1,5 +1,7 @@
 (function () {
+  // おすすめ一覧の編集/削除を制御する。
   async function handleEditLinkClick(event) {
+    // 編集権限を確認してから遷移する。
     event.preventDefault();
     const link = event.currentTarget;
     const href = link.getAttribute('href');
@@ -25,6 +27,7 @@
   }
 
   function setupEditLinks() {
+    // 編集リンクのイベントを設定する。
     document.querySelectorAll('.edit-link').forEach((link) => {
       link.removeEventListener('click', handleEditLinkClick);
       link.addEventListener('click', handleEditLinkClick);
@@ -32,6 +35,7 @@
   }
 
   async function handleDeleteLinkClick(event) {
+    // 削除確認後に削除リクエストを送る。
     event.preventDefault();
     const link = event.currentTarget;
     const id = link.dataset.id;
@@ -62,6 +66,7 @@
   }
 
   function setupDeleteLinks() {
+    // 削除リンクのイベントを設定する。
     document.querySelectorAll('.delete-link').forEach((link) => {
       link.removeEventListener('click', handleDeleteLinkClick);
       link.addEventListener('click', handleDeleteLinkClick);
@@ -69,6 +74,7 @@
   }
 
   function init() {
+    // 初期化処理。
     setupEditLinks();
     setupDeleteLinks();
   }

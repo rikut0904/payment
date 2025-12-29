@@ -3,6 +3,7 @@ const { SUPPORTED_CARD_BRANDS } = require('./constants');
 const { parseAmount, parseBillingDay, normalizeCardType, normalizeCurrency, parseDateInput } = require('./utils');
 
 function validateCardPayload(body, { formValuesBase = {} } = {}) {
+  // カード入力を検証しペイロードを作る。
   const cardName = (body.cardName || '').trim();
   const cardBrand = SUPPORTED_CARD_BRANDS.includes(body.cardBrand) ? body.cardBrand : 'その他';
   const last4Digits = (body.last4Digits || '').trim();
@@ -72,6 +73,7 @@ function validateCardPayload(body, { formValuesBase = {} } = {}) {
 }
 
 async function validateSubscriptionPayload(body, { cards, sessionUid }) {
+  // サブスク入力を検証しペイロードを作る。
   const cardId = (body.cardId || '').trim();
   const serviceName = (body.serviceName || '').trim();
   const amount = parseAmount(body.amount);

@@ -7,6 +7,7 @@ var { buildUpcomingPaymentMonths, calculateUpcomingPayments, summarizeMonthlyTot
 var { formatCurrency, startOfDay } = require('./card/utils');
 
 function toJpyAmount(payment, exchangeRates) {
+  // 支払金額をJPYに変換し、失敗時は0にする。
   const rawAmount = Number(payment.amount) || 0;
   if (!Number.isFinite(rawAmount) || rawAmount <= 0) {
     return 0;
@@ -23,6 +24,7 @@ function toJpyAmount(payment, exchangeRates) {
 }
 
 function correctSummarizeMonthlyTotals(payments, exchangeRates) {
+  // 安全にJPY換算して月別合計を作る。
   const summaryMap = new Map();
   payments.forEach((payment) => {
     const existing = summaryMap.get(payment.monthKey) || {
@@ -40,7 +42,7 @@ function correctSummarizeMonthlyTotals(payments, exchangeRates) {
   return totals.sort((a, b) => a.monthKey.localeCompare(b.monthKey));
 }
 
-/* GET dashboard page. */
+// ダッシュボードの合計・推移を表示する。
 router.get(
   '/',
   asyncHandler(async function (req, res) {

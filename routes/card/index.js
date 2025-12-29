@@ -38,6 +38,7 @@ var { asyncHandler, renderAddCardPage, renderEditCardPage } = require('./helpers
 router.get(
   '/',
   asyncHandler(async function (req, res) {
+    // カード一覧と支払予定を表示する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -156,6 +157,7 @@ router.get(
 router.get(
   '/add',
   asyncHandler(async function (req, res) {
+    // カード追加フォームを表示する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -167,6 +169,7 @@ router.get(
 router.post(
   '/add',
   asyncHandler(async function (req, res) {
+    // 入力を検証してカードを作成する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -191,6 +194,7 @@ router.post(
 router.get(
   '/edit/:id',
   asyncHandler(async function (req, res) {
+    // 既存値を使って編集フォームを表示する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -216,6 +220,7 @@ router.get(
 router.post(
   '/edit/:id',
   asyncHandler(async function (req, res) {
+    // 入力を検証してカードを更新する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');
@@ -249,6 +254,7 @@ router.post(
 router.post(
   '/delete/:id',
   asyncHandler(async function (req, res) {
+    // 所有者確認後にカードを削除する。
     const sessionUid = req.session?.user?.uid;
     if (!sessionUid) {
       return res.redirect('/login');

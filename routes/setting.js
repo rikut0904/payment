@@ -6,6 +6,7 @@ var { updateUserNameForUser, deleteLikesByUser } = require('../lib/firestoreLike
 var { fetchWithTimeout, isTimeoutError } = require('../lib/httpClient');
 
 function renderSetting(req, res, { errorMessage = '', successMessage = '', formValues = {}, statusCode = 200 } = {}) {
+  // 設定画面を描画する。
   res.status(statusCode).render('setting/index', {
     title: '設定',
     projectName: 'Payment',
@@ -17,6 +18,7 @@ function renderSetting(req, res, { errorMessage = '', successMessage = '', formV
 }
 
 async function loadUserFormValues(sessionUid, req) {
+  // プロフィール/セッションからフォーム値を取得する。
   let profile = null;
   try {
     profile = await getUserProfile(sessionUid);
@@ -29,7 +31,7 @@ async function loadUserFormValues(sessionUid, req) {
   };
 }
 
-/* GET home page. */
+// 現在のユーザー情報を表示する。
 router.get('/', async function (req, res) {
   const sessionUid = req.session?.user?.uid;
   if (!sessionUid) {
@@ -39,6 +41,7 @@ router.get('/', async function (req, res) {
   renderSetting(req, res, { formValues });
 });
 
+// ユーザー名/メールアドレスを更新する。
 router.post('/', async function (req, res) {
   const sessionUid = req.session?.user?.uid;
   if (!sessionUid) {
@@ -102,6 +105,7 @@ router.post('/', async function (req, res) {
   }
 });
 
+// 現在のパスワード確認後に更新する。
 router.post('/password', async function (req, res) {
   const sessionUid = req.session?.user?.uid;
   if (!sessionUid) {
@@ -163,6 +167,7 @@ router.post('/password', async function (req, res) {
   }
 });
 
+// likes/profile/authを順に削除する。
 router.post('/delete', async function (req, res) {
   const sessionUid = req.session?.user?.uid;
   if (!sessionUid) {
