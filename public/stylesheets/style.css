@@ -1640,7 +1640,7 @@ footer {
   }
 
   .header-title h1 {
-    font-size: 1.35rem;
+    font-size: 1.2rem;
   }
 
   .header-nav ul {
@@ -1830,5 +1830,13 @@ footer {
 
   .card-detail__amount {
     text-align: left;
+  }
+
+  .card--subscription-form {
+    padding: 14px;
+  }
+
+  .card--subscription-form #cardId {
+    font-size: 0.9rem;
   }
 }
