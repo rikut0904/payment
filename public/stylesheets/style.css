@@ -1001,7 +1001,8 @@ footer {
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-  min-width: 220px;
+  min-width: 180px;
+  max-width: min(240px, 85vw);
   padding: 4px;
   display: flex;
   flex-direction: column;
@@ -1839,4 +1840,5 @@ footer {
   .card--subscription-form #cardId {
     font-size: 0.9rem;
   }
+
 }
