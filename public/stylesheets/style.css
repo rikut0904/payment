@@ -1055,6 +1055,7 @@ footer {
 
 .card-menu__item--danger:hover {
   background: rgba(220, 38, 38, 0.85);
+  color: #fff;
 }
 
 .card-menu--meta {
@@ -1121,13 +1122,26 @@ footer {
   margin-top: 12px;
 }
 
+.table-wrapper:has(.card-menu[open]) {
+  overflow: visible;
+}
+
+.table-wrapper .card-menu {
+  position: static;
+}
+
+.table-wrapper .actions-cell {
+  position: relative;
+}
+
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1149,12 +1163,34 @@ footer {
 .table td {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
+  overflow: visible;
+}
+
+.table tr:last-child th,
+.table tr:last-child td {
+  border-bottom: none;
 }
 
 .table th {
   background: var(--surface);
   color: var(--text-sub);
   font-weight: 600;
+}
+
+.table tr:first-child th:first-child {
+  border-top-left-radius: 15px;
+}
+
+.table tr:first-child th:last-child {
+  border-top-right-radius: 15px;
+}
+
+.table tr:last-child td:first-child {
+  border-bottom-left-radius: 15px;
+}
+
+.table tr:last-child td:last-child {
+  border-bottom-right-radius: 15px;
 }
 
 .table-actions {
