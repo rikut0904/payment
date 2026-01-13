@@ -18,6 +18,7 @@
         <%- include('../partials/header', { title }) %>
             <div class="content">
                 <section class="card">
+                    <!-- リスト4-13を参考に必要なフォームを追加 -->
                     <form class="form-grid" method="post" action="/like/add">
                         <label for="title">商品名（必須）</label>
                         <input type="text" id="title" name="title" required>
@@ -26,6 +27,7 @@
                         <label for="category">カテゴリ（必須）</label>
                         <select id="category" name="category" required>
                             <option value="" disabled selected>カテゴリを選択</option>
+                            <!-- /routes/like.jsのLIKE_CATEGORIESより取得 -->
                             <% likeCategories.forEach(function(category) { %>
                                 <option value="<%= category %>">
                                     <%= category %>

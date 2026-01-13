@@ -21,6 +21,7 @@
           <details class="filter-accordion" <%=showFilterOpen ? 'open' : '' %>>
             <summary>ソート・フィルタ条件</summary>
             <div class="filter-bar">
+              <!-- リスト4-13,4-14を参考にデータの表示 -->
               <form class="filter-form" method="get" action="<%= filterAction || '/like' %>">
                 <div class="filter-grid">
                   <% if (showUserNameFilter) { %>

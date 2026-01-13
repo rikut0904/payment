@@ -62,7 +62,7 @@ function respondForbidden(req, res, message) {
 }
 
 function extractLikeData(body) {
-  // Likeフォームの入力を検証・正規化する。
+  // Likeフォームの入力を検証・正規化する。(バリデーション)
   const { date, title, contentText, url, image, category } = body || {};
   if (!date || !title) {
     return { error: '必須項目が未入力です。' };
@@ -565,7 +565,7 @@ router.get(
   })
 );
 
-// 旧URL互換: /like/:id を詳細へリダイレクトする。
+// 旧URL互換: /like/:id を詳細へリダイレクトする。(開発中に利用しいたURLのリダイレクト対応※後方互換性の対応)
 router.get('/:id', function (req, res) {
   res.redirect(`/like/detail/${req.params.id}`);
 });
