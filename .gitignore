@@ -3,3 +3,4 @@ node_modules
 serviceAcountkey.json
 .firebaserc
 firestore.rules
+package-lock.json

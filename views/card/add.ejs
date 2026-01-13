@@ -18,11 +18,15 @@
     <%- include('../partials/header', { title }) %>
       <div class="content">
         <section class="card">
+          <!-- リスト4-13,4-14を参考にフォームの表示 -->
+          <!-- firebase上にカード情報を保存 -->
           <% if (errorMessage) { %>
             <div class="alert alert-error">
               <%= errorMessage %>
             </div>
             <% } %>
+            <!-- カード情報を入力するフォーム -->
+            <!-- data-credit-fieldを用いることにより、クレジットカードのみの入力というバリデーションを実現 -->
               <form class="form-grid" method="post" action="/card/add">
                 <div class="form-field">
                   <label for="cardName">カード名 <span class="required">*</span></label>

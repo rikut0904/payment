@@ -28,6 +28,7 @@
                   </div>
                 </div>
               </header>
+              <!-- 今月の支払額をfirebaseから取得して日本円に変換して表示。為替レートは外部APIを利用して取得 -->
               <div class="card-panel__body">
                 <dl class="detail-list">
                   <div>
@@ -54,6 +55,8 @@
                 </dl>
               </div>
             </article>
+            <!-- データをroutes/dashboard.jsの historyTotalsから取得 -->
+            <!-- グラフ描画はpublic/javascripts/dashboard.jsで行う -->
             <article class="card-panel">
               <header class="card-panel__header">
                 <div class="card-panel__title-block">
@@ -63,20 +66,34 @@
                 </div>
               </header>
               <div class="card-panel__body">
+                <!-- グラフの高さ計算用：5ヶ月の中の最大値を取得して棒グラフの高さを計算する -->
                 <% const maxTotal = Number(historyMaxTotal) || 0; %>
                 <div class="chart-wrapper">
                   <div class="bar-chart">
+                    <!-- 各月の棒グラフを生成 -->
+                    <!-- historyTotals: [{ monthKey, monthLabel, totalAmount, formattedTotal }, ...] -->
                     <% (historyTotals || []).forEach(function(item) { %>
+                      <!-- 今月の支払額 -->
                       <% const totalAmount = Number(item.totalAmount) || 0; %>
+                      <!-- 棒グラフの高さを計算 -->
+                      <!-- 高さ = (今月の支払額 / 最大値) * 100% -->
+                      <!-- 最小値4%（0円でも視覚的に表示） -->
                       <% const rawPercent = maxTotal ? Math.round((totalAmount / maxTotal) * 100) : 0; %>
                       <% const heightValue = Number.isFinite(rawPercent) ? Math.max(4, rawPercent) : 4; %>
+
+                      <!-- 1つの棒グラフ要素 -->
                       <div class="bar-chart__item">
                         <div class="bar-chart__bar-wrap">
+                          <!-- 棒グラフ本体 -->
+                          <!-- data-height属性に高さの割合（%）を設定 -->
+                          <!-- JavaScriptで読み取ってCSSのheightプロパティに適用 -->
                           <div class="bar-chart__bar" data-height="<%= heightValue %>"></div>
                         </div>
+                        <!-- 月のラベル（例: "2025年12月"） -->
                         <div class="bar-chart__label">
                           <%= item.monthLabel %>
                         </div>
+                        <!-- 支払額の表示（例: "¥12,345"） -->
                         <div class="bar-chart__value">
                           <%= item.formattedTotal %>
                         </div>

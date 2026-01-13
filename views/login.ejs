@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         <%= title %>
     </title>
@@ -10,7 +10,7 @@
         crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel='stylesheet' href='/stylesheets/style.css' />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 </head>
 
 <body>
@@ -18,7 +18,9 @@
         <header class="app-header">
             <div class="app-header__bar">
                 <div class="app-header__brand">
-                    <a href="/" class="app-header__brand-link"><%= projectName %></a>
+                    <a href="/" class="app-header__brand-link">
+                        <%= projectName %>
+                    </a>
                 </div>
                 <nav class="header-nav header-nav--desktop" aria-label="メインナビゲーション">
                     <ul>
@@ -59,6 +61,8 @@
                         <%= infoMessage %>
                     </p>
                     <% } %>
+                        <!-- リスト4-13,4-14を参考にフォームの表示 -->
+                        <!-- firebase上からログイン情報を取得してログインをおこなう -->
                         <form id="emailLoginForm" action="/login" method="post">
                             <label for="loginEmail">メールアドレス</label>
                             <input type="email" id="loginEmail" name="email" required>
@@ -77,8 +81,8 @@
         </footer>
     </div>
     <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
-  <script type="module" src="/javascripts/firebase-auth.js" defer></script>
-  <script type="module" src="/javascripts/header.js" defer></script>
+    <script type="module" src="/javascripts/firebase-auth.js" defer></script>
+    <script type="module" src="/javascripts/header.js" defer></script>
 </body>
 
 </html>

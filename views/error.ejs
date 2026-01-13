@@ -44,19 +44,23 @@
         </nav>
       </div>
     </div>
+    <!-- エラー画面を表示 -->
     <div class="content">
       <section class="card">
         <% const statusCode = typeof status === 'number' ? status : 500; %>
         <% const isNotFound = statusCode === 404; %>
+        <!-- 404エラーの場合はページが見つかりません、それ以外のサーバーエラーなどはエラーが発生しましたと表示 -->
         <h2><%= isNotFound ? 'ページが見つかりません' : 'エラーが発生しました' %></h2>
         <p>
           <%= isNotFound ? '指定されたページは存在しないか、移動された可能性があります。' : '時間をおいて再度お試しください。' %>
         </p>
         <p class="muted">エラーコード: <%= statusCode %></p>
+        <!-- エラーの詳細を表示 -->
         <% if (!isNotFound && error && error.stack && message) { %>
           <p class="muted"><%= message %></p>
         <% } %>
         <div class="actions">
+          <!-- トップページに戻るボタンを表示 -->
           <a href="/" class="btn">ホームに戻る</a>
         </div>
       </section>
